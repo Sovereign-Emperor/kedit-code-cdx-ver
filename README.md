@@ -40,7 +40,7 @@ For a fully custom edit, change the commented base `CONTENT` edit pack near the 
 
 Use `\n` in the multi-line `kicker`, `headline`, `bottom`, `sideNote`, or data headline fields to control line breaks. Keep scene titles concise for legibility on a phone.
 
-The five scene components share the same visual system and animation engine, so the built-in presets and custom edits can be remixed without rebuilding the scenes.
+The five scene components share the same visual system and animation engine, so the built-in presets and custom edits can be remixed without rebuilding the scenes. To change the shared visual structure, edit the matching component in `src/components/MotionScenes.jsx`; to change studio panels or timeline controls, use `src/components/StudioControls.jsx`.
 
 ## Motion-design controls
 
@@ -59,11 +59,24 @@ The default composition is 1080 × 1920 / 9:16. The browser preview does not enc
 ## Architecture
 
 ```text
+src/
+├── main.jsx                    # Edit-pack data, preset library, app state, GSAP timeline
+├── components/
+│   ├── MotionScenes.jsx         # Reusable intro, code, impact, data, and outro scenes
+│   └── StudioControls.jsx       # Reusable preset, effects, transitions, and timeline controls
+└── styles.css                  # Shared composition and studio styling
+```
+
+`main.jsx` owns the content and animation engine. `MotionScenes.jsx` maps each pack's scene data to reusable visual components. `StudioControls.jsx` contains data-driven controls; the parent owns their state and connects actions to playback or pack changes. Add a new pack by extending `SCENE_PACKS`, or add a new visual scene by updating the scene components and the associated timeline in `useTimeline`.
+
+High-level customization notes are kept next to the edit-pack configuration and component responsibilities. Keep scene selectors and GSAP targets in sync when changing scene markup, since the timeline animates those elements by class.
+
+```text
 CONTENT
    ↓
 React Composition
-   ↓
-Reusable Visual Components
+   ├── MotionScenes
+   └── StudioControls
    ↓
 GSAP Timeline + Scene Transitions
    ↓

@@ -1,6 +1,8 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import gsap from 'gsap';
+import { MotionScenes } from './components/MotionScenes.jsx';
+import { EffectControls, ScenePackSelector, TimelinePanel, TransitionList } from './components/StudioControls.jsx';
 import './styles.css';
 
 // ============================================================
@@ -201,26 +203,6 @@ function resetMetric(root, content) {
   if (value) value.textContent = `${metric.prefix}${metric.from.toLocaleString()}`;
 }
 
-function MetricValue({ metric }) {
-  const value = useRef(null);
-  useLayoutEffect(() => {
-    if (value.current) value.current.textContent = `${metric.prefix}${metric.from.toLocaleString()}`;
-  }, [metric.from, metric.prefix]);
-  return <div className="metric-value" ref={value} />;
-}
-
-function formatTime(seconds) {
-  return `00:${String(seconds).padStart(2, '0')}`;
-}
-
-function KineticWords({ text, className = '' }) {
-  return <span className={`kinetic-words ${className}`} aria-label={text}>
-    {text.split(' ').map((word, wordIndex) => <span className="kinetic-word" key={`${word}-${wordIndex}`} aria-hidden="true">
-      {Array.from(word).map((letter, index) => <span className="kinetic-letter" key={`${letter}-${index}`}>{letter}</span>)}
-    </span>)}
-  </span>;
-}
-
 function useTimeline(content) {
   const root = useRef(null);
   const timeline = useRef(null);
@@ -369,19 +351,6 @@ function useTimeline(content) {
   return { root, run, reset, togglePlayback, seek, playing, progress, duration, status, hasTimeline: Boolean(timeline.current) };
 }
 
-function CodeLine({ children, index }) {
-  return <div className="code-line" data-anim><span className="line-no">{String(index + 1).padStart(2, '0')}</span><span>{children}</span></div>;
-}
-
-function Graph({ values }) {
-  return <div className="graph" aria-label="animated growth graph">
-    {values.map((value, index) => <div className="graph-col" key={index}>
-      <div className="graph-bar" style={{ height: `${value}%` }} />
-      <span>{index + 1}</span>
-    </div>)}
-  </div>;
-}
-
 function App() {
   const [selectedPackId, setSelectedPackId] = useState(SCENE_PACKS[0].id);
   const selectedPack = SCENE_PACKS.find(pack => pack.id === selectedPackId) || SCENE_PACKS[0];
@@ -389,10 +358,8 @@ function App() {
   const { root, run, reset, togglePlayback, seek, playing, progress, duration, status, hasTimeline } = useTimeline(content);
   const [effects, setEffects] = useState(content.effects);
   const effectClass = Object.entries(effects).filter(([, enabled]) => enabled).map(([name]) => `fx-${name}`).join(' ');
-  const playhead = `${progress * 100}%`;
-  const elapsed = progress === 1 ? Math.ceil(duration) : Math.floor(progress * duration);
   const project = content.project;
-  const scenes = content.scenes;
+  const timelineClips = CLIPS.map(clip => ({ ...clip, ...content.scenes[clip.key] }));
 
   const toggleEffect = (effect) => {
     setEffects(current => ({ ...current, [effect]: !current[effect] }));
@@ -419,122 +386,15 @@ function App() {
           <div><strong>Portrait {project.width}</strong><small>{project.width} × {project.height} · {project.fps} FPS</small></div>
           <span className="active-indicator" />
         </div>
-        <div className="panel-divider" />
-        <div className="pack-heading"><span>SCENE PACKS</span><span>{String(SCENE_PACKS.length).padStart(2, '0')}</span></div>
-        <p className="panel-caption">Swap the full story and visual theme.</p>
-        <div className="pack-grid">
-          {SCENE_PACKS.map(pack => <button
-            className={`pack-card ${selectedPack.id === pack.id ? 'is-selected' : ''}`}
-            key={pack.id}
-            aria-pressed={selectedPack.id === pack.id}
-            onClick={() => selectPack(pack)}
-            style={{ '--pack-accent': pack.content.theme.accent }}
-          >
-            <span className="pack-swatch" />
-            <span className="pack-copy"><strong>{pack.name}</strong><small>{pack.description}</small></span>
-          </button>)}
-        </div>
-        <div className="panel-divider" />
-        <div className="panel-heading"><span>EFFECTS</span><span className="effect-count">03</span></div>
-        <p className="panel-caption">Glow and grain apply live; camera applies on play.</p>
-        <div className="effect-list">
-          <button className={`effect-row ${effects.glow ? 'is-enabled' : ''}`} aria-pressed={effects.glow} onClick={() => toggleEffect('glow')}>
-            <span className="effect-icon glow-icon">✳</span><span><strong>Bloom / Glow</strong><small>Highlight emission</small></span><i className="toggle-switch" />
-          </button>
-          <button className={`effect-row ${effects.grain ? 'is-enabled' : ''}`} aria-pressed={effects.grain} onClick={() => toggleEffect('grain')}>
-            <span className="effect-icon grain-icon">▦</span><span><strong>Film Grain</strong><small>Fine texture overlay</small></span><i className="toggle-switch" />
-          </button>
-          <button className={`effect-row ${effects.camera ? 'is-enabled' : ''}`} aria-pressed={effects.camera} onClick={() => toggleEffect('camera')}>
-            <span className="effect-icon camera-icon">◉</span><span><strong>Camera Punch</strong><small>Subtle push-in move</small></span><i className="toggle-switch" />
-          </button>
-        </div>
-        <div className="panel-divider" />
-        <div className="panel-heading"><span>TRANSITIONS</span><span className="effect-count">04</span></div>
-        <div className="transition-list">
-          <div><span className="transition-glyph wipe-glyph">↗</span><span>Kinetic type</span><small>{content.motion.typeDuration.toFixed(1)}s</small></div>
-          <div><span className="transition-glyph blur-glyph">◧</span><span>Editor wipe</span><small>{content.motion.transition.toFixed(1)}s</small></div>
-          <div><span className="transition-glyph flash-glyph">✦</span><span>Flash impact</span><small>0.1s</small></div>
-          <div><span className="transition-glyph zoom-glyph">◎</span><span>Camera punch</span><small>{content.motion.cameraDuration.toFixed(1)}s</small></div>
-        </div>
+        <ScenePackSelector packs={SCENE_PACKS} selectedId={selectedPack.id} onSelect={selectPack} />
+        <EffectControls value={effects} onChange={toggleEffect} />
+        <TransitionList motion={content.motion} />
         <div className="panel-note"><span>✦</span> EDIT CONTENT IN <b>src/main.jsx</b></div>
       </aside>
 
       <section className="preview-column" aria-label="Composition preview">
         <div className="preview-toolbar"><span><i className="toolbar-dot" />COMPOSITION VIEW</span><span>FIT <b>100%</b></span></div>
-        <section className={`stage ${effectClass}`} ref={root} style={{ '--accent': content.theme.accent, '--scene-background': content.theme.background, '--display-font': content.theme.displayFont, '--frame-width': project.width, '--frame-height': project.height }}>
-          <div className="camera-layer">
-            <div className="grain" />
-            <div className="stage-grid" />
-            <div className="scan" data-anim />
-            <div className="flash" data-anim />
-            <header className="topbar">
-              <div><span className="brand-dot pulse-dot" />{content.brand}</div>
-              <div className="status">{status}<span className="status-dot" /></div>
-            </header>
-            <div className="scene-stage">
-              <section className="motion-scene scene-intro">
-                <div className="intro-side-note">{scenes.intro.eyebrow}</div>
-                <div className="intro-orb" />
-                <div className="intro-copy">
-                  <div className="intro-kicker"><span className="kicker-line" />{scenes.intro.kicker.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{line}</React.Fragment>)}</div>
-                  <h1 className="intro-title"><KineticWords text={scenes.intro.title} className="intro-words" /></h1>
-                  <div className="motion-rule intro-rule" />
-                  <p className="intro-subtitle">{scenes.intro.subtitle}</p>
-                </div>
-                <div className="intro-index"><span>{scenes.intro.index}</span><i />{scenes.intro.label}</div>
-              </section>
-
-              <section className="motion-scene scene-code">
-                <div className="scene-meta"><span>{scenes.code.index} / {scenes.code.label}</span><span>{scenes.code.inputLabel}</span></div>
-                <div className="code-headline">{scenes.code.headline.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{index === 1 ? <em>{line}</em> : line}</React.Fragment>)}</div>
-                <div className="editor">
-                  <div className="editor-head"><span>◈ &nbsp; {scenes.code.fileName}</span><span>● ● ●</span></div>
-                  <div className="code-body">{scenes.code.code.map((line, index) => <CodeLine key={index} index={index}>{highlightCode(line)}</CodeLine>)}</div>
-                </div>
-                <div className="code-stamp"><span>{scenes.code.stamp}</span><b>↗</b></div>
-                <div className="scene-footnote">{scenes.code.footnote}</div>
-              </section>
-
-              <section className="motion-scene scene-impact">
-                <div className="impact-top"><span>{scenes.impact.eyebrow}</span><span>{scenes.impact.index} / {scenes.impact.label}</span></div>
-                <div className="impact-orbit orbit" />
-                <div className="impact-copy">
-                  <div className="impact-overline">{scenes.impact.overline}</div>
-                  <div className="impact-word"><KineticWords text={scenes.impact.word} className="impact-words" /></div>
-                  <div className="impact-underline" />
-                  <div className="impact-bottom">{scenes.impact.bottom.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{index === 1 ? <b>{line}</b> : line}</React.Fragment>)}</div>
-                </div>
-                <div className="impact-side">{scenes.impact.sideNote.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{line}</React.Fragment>)} <span>✳</span></div>
-              </section>
-
-              <section className="motion-scene scene-data">
-                <div className="data-topline"><span>{scenes.data.index} / {scenes.data.label}</span><span>{scenes.data.sideLabel}</span></div>
-                <div className="data-title">{scenes.data.headline.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{index === 1 ? <em>{line}</em> : line}</React.Fragment>)}</div>
-                <div className="metric">
-                  <div className="data-kicker">{scenes.data.metric.label} <span>↗ {scenes.data.metricTrend}</span></div>
-                  <MetricValue metric={scenes.data.metric} />
-                  <Graph values={scenes.data.graph} />
-                  <div className="data-caption">{scenes.data.captions.map(caption => <span key={caption}>{caption}</span>)}</div>
-                </div>
-                <div className="data-footnote">{scenes.data.footnote}</div>
-              </section>
-
-              <section className="motion-scene scene-outro">
-                <div className="outro-backdrop">{scenes.outro.backdrop}</div>
-                <div className="outro-index">{scenes.outro.index} / {scenes.outro.label}</div>
-                <div className="outro-copy">
-                  <div className="outro-kicker">{scenes.outro.kicker}</div>
-                  <div className="outro-title"><KineticWords text={scenes.outro.title} className="outro-words" /></div>
-                  <div className="motion-rule outro-rule" />
-                  <p className="outro-subtitle">{scenes.outro.subtitle}</p>
-                </div>
-                <div className="outro-cta"><span>{scenes.outro.callToAction}</span><b>↗</b></div>
-              </section>
-            </div>
-            <div className="frame-corner corner-tl" /><div className="frame-corner corner-tr" />
-            <footer><span>{content.footer}</span><span>{project.width} × {project.height} <i>·</i> {project.aspectRatio}</span></footer>
-          </div>
-        </section>
+        <MotionScenes content={content} status={status} stageRef={root} effectClass={effectClass} />
         <div className="preview-caption"><span><i className="caption-dot" />LIVE PREVIEW</span><span>DRAG PLAYHEAD TO SCRUB</span></div>
       </section>
 
@@ -551,48 +411,19 @@ function App() {
       </aside>
     </div>
 
-    <section className="timeline-panel" aria-label="Animation timeline">
-      <div className="timeline-top">
-        <div className="timeline-title"><span className="timeline-icon">◷</span><strong>ANIMATION TIMELINE</strong><span className="timeline-duration">{formatTime(Math.ceil(duration))}</span></div>
-        <div className="timeline-actions">
-          <button className="transport-button" onClick={togglePlayback} aria-label={playing ? 'Pause animation' : 'Play animation'}>{playing ? 'Ⅱ' : '▶'}</button>
-          <button className="transport-button reset-button" onClick={reset} aria-label="Reset animation">↺</button>
-          <span className="time-readout">{formatTime(elapsed)} <i>/</i> {formatTime(Math.ceil(duration))}</span>
-        </div>
-      </div>
-      <div className={`timeline-track ${hasTimeline ? 'has-timeline' : ''}`}>
-        <div className="track-label">MASTER</div>
-        <div className="track-content">
-          <div className="clip-row">{CLIPS.map((clip, index) => {
-            const scene = scenes[clip.key];
-            return <div className={`timeline-clip clip-${index + 1}`} key={clip.key} style={{ width: `${clip.width}%` }}>{scene.index} &nbsp; {scene.label}</div>;
-          })}</div>
-          <div className="playhead" style={{ left: playhead }} />
-          <input
-            className="scrubber"
-            aria-label="Scrub animation timeline"
-            type="range"
-            min="0"
-            max="1"
-            step="0.001"
-            value={progress}
-            disabled={!hasTimeline}
-            onChange={(event) => seek(Number(event.target.value))}
-          />
-        </div>
-      </div>
-      <div className="timeline-bottom"><span>ACTIVE PACK <i>{selectedPack.name.toUpperCase()}</i> <i>TYPE</i> <i>WIPE</i> <i>FLASH</i></span><span>GSAP · REUSABLE SCENE ENGINE</span></div>
-    </section>
+    <TimelinePanel
+      clips={timelineClips}
+      packName={selectedPack.name}
+      progress={progress}
+      duration={duration}
+      playing={playing}
+      hasTimeline={hasTimeline}
+      onPlayPause={togglePlayback}
+      onReset={reset}
+      onSeek={seek}
+    />
     <footer className="studio-footer"><span>KEDIT MOTION ENGINE <b>01.0</b></span><span>CONTENT-DRIVEN MOTION GRAPHICS</span><span className="footer-status"><i /> ALL CHANGES SAVED</span></footer>
   </main>;
-}
-
-function highlightCode(line) {
-  const escaped = line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-  return <span dangerouslySetInnerHTML={{ __html: escaped
-    .replace(/\b(const|let|var|if|else|return)\b/g, '<i>$1</i>')
-    .replace(/\b(assets|income|skills|time|wealth|cashflow)\b/g, '<b>$1</b>')
-    .replace(/(\d+)/g, '<em>$1</em>') }} />;
 }
 
 createRoot(document.getElementById('root')).render(<App />);
