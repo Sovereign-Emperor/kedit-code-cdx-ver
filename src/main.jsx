@@ -23,7 +23,7 @@ const CONTENT = {
   accent: '#c7a34b'
 };
 
-const TIMELINE_DURATION = 8;
+const TIMELINE_DURATION = 13;
 
 const CLIPS = [
   { label: '01  INTRO', width: 19 },
@@ -42,6 +42,14 @@ function formatTime(seconds) {
   return `00:${String(seconds).padStart(2, '0')}`;
 }
 
+function KineticWords({ text, className = '' }) {
+  return <span className={`kinetic-words ${className}`} aria-label={text}>
+    {text.split(' ').map((word, wordIndex) => <span className="kinetic-word" key={`${word}-${wordIndex}`} aria-hidden="true">
+      {Array.from(word).map((letter, index) => <span className="kinetic-letter" key={`${letter}-${index}`}>{letter}</span>)}
+    </span>)}
+  </span>;
+}
+
 function useTimeline() {
   const root = useRef(null);
   const timeline = useRef(null);
@@ -55,6 +63,9 @@ function useTimeline() {
     timeline.current = null;
     if (root.current) {
       gsap.set(root.current.querySelectorAll('[data-anim]'), { clearProps: 'all' });
+      gsap.set(root.current.querySelectorAll('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, rotation: 0, filter: 'blur(0px)' });
+      gsap.set(root.current.querySelector('.scene-intro'), { autoAlpha: 1 });
+      gsap.set(root.current.querySelector('.flash'), { opacity: 0 });
       gsap.set(root.current.querySelector('.camera-layer'), { clearProps: 'all' });
       resetMetric(root.current);
     }
@@ -75,17 +86,21 @@ function useTimeline() {
     const camera = root.current.querySelector('.camera-layer');
 
     gsap.set(q('[data-anim]'), { clearProps: 'all' });
+    gsap.set(q('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, filter: 'blur(0px)', clipPath: 'inset(0 0 0 0)' });
     gsap.set(camera, { clearProps: 'all', scale: 1 });
-    gsap.set(q('.boot'), { opacity: 0, y: 10 });
-    gsap.set(q('.title-block'), { opacity: 0, y: 24, filter: 'blur(8px)' });
-    gsap.set(q('.editor'), { opacity: 0, y: 18, clipPath: 'inset(0 100% 0 0 round 12px)' });
+    gsap.set(q('.intro-words .kinetic-letter'), { yPercent: 125, rotation: 8, opacity: 0 });
+    gsap.set(q('.intro-kicker, .intro-subtitle'), { opacity: 0, y: 16 });
+    gsap.set(q('.editor'), { clipPath: 'inset(0 100% 0 0)' });
     gsap.set(q('.code-line'), { opacity: 0, x: -18 });
-    gsap.set(q('.keyword'), { opacity: 0, scale: 0.72, rotationX: 45, filter: 'blur(10px)' });
-    gsap.set(q('.metric'), { opacity: 0, scale: 0.82, y: 12 });
+    gsap.set(q('.impact-words .kinetic-letter'), { yPercent: 110, rotation: -8, opacity: 0, scale: 0.8 });
+    gsap.set(q('.metric-value'), { opacity: 0, scale: 0.78, filter: 'blur(10px)' });
+    gsap.set(q('.data-kicker, .data-caption'), { opacity: 0, y: 12 });
     gsap.set(q('.graph-bar'), { scaleY: 0, transformOrigin: 'bottom' });
-    gsap.set(q('.final'), { opacity: 0, y: 25, scale: 0.96, filter: 'blur(8px)' });
+    gsap.set(q('.outro-words .kinetic-letter'), { yPercent: 120, opacity: 0 });
+    gsap.set(q('.outro-subtitle'), { opacity: 0, x: -20 });
     gsap.set(q('.scan'), { xPercent: -140 });
     gsap.set(q('.flash'), { opacity: 0 });
+    gsap.set(q('.motion-rule, .orbit'), { scaleX: 0, scaleY: 0, transformOrigin: 'center' });
 
     const counter = { value: CONTENT.metric.from };
     const tl = gsap.timeline({
@@ -99,40 +114,57 @@ function useTimeline() {
     timeline.current = tl;
 
     tl.addLabel('intro')
-      .to(q('.boot'), { opacity: 1, y: 0, duration: 0.35, stagger: 0.12 })
+      .set(q('.scene-intro'), { autoAlpha: 1 })
       .call(() => setStatus('INTRO'))
-      .to(q('.title-block'), { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.8 })
+      .to(q('.intro-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, duration: 0.65, stagger: { each: 0.025, from: 'start' }, ease: 'back.out(1.4)' })
+      .to(q('.intro-kicker, .intro-subtitle'), { opacity: 1, y: 0, duration: 0.42, stagger: 0.12 }, '-=0.35')
+      .to(q('.intro-rule'), { scaleX: 1, duration: 0.55, ease: 'power3.out' }, '-=0.3')
+      .to(q('.scene-intro'), { autoAlpha: 0, scale: 1.08, filter: 'blur(8px)', duration: 0.48, ease: 'power2.in' }, '+=0.35')
       .addLabel('code')
+      .set(q('.scene-code'), { autoAlpha: 1 })
       .call(() => setStatus('CODE'))
-      .to(q('.editor'), { opacity: 1, y: 0, clipPath: 'inset(0 0% 0 0 round 12px)', duration: 0.55 })
-      .to(q('.code-line'), { opacity: 1, x: 0, duration: 0.32, stagger: 0.12 }, '-=0.18')
-      .to(q('.scan'), { xPercent: 140, duration: 0.8, ease: 'power2.inOut' }, '-=0.15')
+      .to(q('.editor'), { clipPath: 'inset(0 0 0 0)', duration: 0.62, ease: 'power3.inOut' })
+      .to(q('.code-line'), { opacity: 1, x: 0, duration: 0.32, stagger: 0.12 }, '-=0.15')
+      .to(q('.scan'), { xPercent: 140, duration: 0.8, ease: 'power2.inOut' }, '-=0.12')
+      .to(q('.scene-code'), { autoAlpha: 0, x: -45, filter: 'blur(6px)', duration: 0.38, ease: 'power2.in' }, '+=0.38')
       .addLabel('impact')
+      .set(q('.scene-impact'), { autoAlpha: 1, x: 55, filter: 'blur(5px)' })
       .call(() => setStatus('IMPACT'))
-      .to(q('.flash'), { opacity: 0.45, duration: 0.06, yoyo: true, repeat: 1 }, '-=0.18')
-      .to(q('.keyword'), { opacity: 1, scale: 1, rotationX: 0, filter: 'blur(0px)', duration: 0.65 })
+      .to(q('.scene-impact'), { x: 0, filter: 'blur(0px)', duration: 0.38, ease: 'power3.out' })
+      .to(q('.flash'), { opacity: 0.16, duration: 0.055, yoyo: true, repeat: 1, ease: 'none' }, '<')
+      .to(q('.impact-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, scale: 1, duration: 0.52, stagger: 0.035, ease: 'back.out(1.7)' }, '-=0.16')
+      .to(q('.orbit'), { scale: 1, duration: 0.7, ease: 'power2.out' }, '-=0.48')
+      .to(q('.scene-impact'), { autoAlpha: 0, scale: 0.92, rotation: 2, filter: 'blur(7px)', duration: 0.4, ease: 'power2.in' }, '+=0.42')
       .addLabel('data')
+      .set(q('.scene-data'), { autoAlpha: 1, scale: 1.07, filter: 'blur(5px)' })
       .call(() => setStatus('DATA'))
-      .to(q('.metric'), { opacity: 1, scale: 1, y: 0, duration: 0.5 })
+      .to(q('.scene-data'), { scale: 1, filter: 'blur(0px)', duration: 0.42, ease: 'power3.out' })
+      .to(q('.data-kicker, .data-caption'), { opacity: 1, y: 0, duration: 0.38, stagger: 0.12 }, '-=0.24')
+      .to(q('.metric-value'), { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.48, ease: 'back.out(1.5)' }, '-=0.2')
       .to(counter, {
         value: CONTENT.metric.to,
-        duration: 1.25,
+        duration: 1.2,
         ease: 'power2.out',
         onUpdate: () => {
           const value = root.current?.querySelector('.metric-value');
           if (value) value.textContent = `${CONTENT.metric.prefix}${Math.round(counter.value).toLocaleString()}`;
         }
-      }, '-=0.1')
-      .to(q('.graph-bar'), { scaleY: 1, duration: 0.5, stagger: 0.07, ease: 'back.out(1.5)' }, '-=0.85');
+      }, '-=0.05')
+      .to(q('.graph-bar'), { scaleY: 1, duration: 0.48, stagger: 0.055, ease: 'back.out(1.5)' }, '-=0.85')
+      .to(q('.scene-data'), { autoAlpha: 0, y: -35, filter: 'blur(6px)', duration: 0.42, ease: 'power2.in' }, '+=0.32')
+      .addLabel('outro')
+      .set(q('.scene-outro'), { autoAlpha: 1, y: 35 })
+      .call(() => setStatus('OUTRO'))
+      .to(q('.scene-outro'), { y: 0, duration: 0.38, ease: 'power3.out' })
+      .to(q('.outro-words .kinetic-letter'), { yPercent: 0, opacity: 1, duration: 0.52, stagger: 0.025, ease: 'power3.out' }, '-=0.18')
+      .to(q('.outro-subtitle'), { opacity: 1, x: 0, duration: 0.4 }, '-=0.25')
+      .to(q('.outro-rule'), { scaleX: 1, duration: 0.45 }, '-=0.28');
 
     if (root.current.classList.contains('fx-camera')) {
       tl.to(camera, { scale: 1.045, duration: 0.5, yoyo: true, repeat: 1, ease: 'power2.inOut' }, '-=0.35');
     }
 
-    tl.addLabel('outro')
-      .call(() => setStatus('OUTRO'))
-      .to(q('.final'), { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.7 })
-      .to(q('.pulse-dot'), { scale: 1.5, opacity: 0.3, duration: 0.25, yoyo: true, repeat: 3 }, '<');
+    tl.to(q('.pulse-dot'), { scale: 1.5, opacity: 0.3, duration: 0.25, yoyo: true, repeat: 3 }, '<');
     tl.to({}, { duration: Math.max(0, TIMELINE_DURATION - tl.duration()) });
     setDuration(tl.duration());
   };
@@ -172,7 +204,7 @@ function CodeLine({ children, index }) {
 function Graph({ values }) {
   return <div className="graph" aria-label="animated growth graph">
     {values.map((value, index) => <div className="graph-col" key={index}>
-      <div className="graph-bar" data-anim style={{ height: `${value}%` }} />
+      <div className="graph-bar" style={{ height: `${value}%` }} />
       <span>{index + 1}</span>
     </div>)}
   </div>;
@@ -221,10 +253,10 @@ function App() {
         <div className="panel-divider" />
         <div className="panel-heading"><span>TRANSITIONS</span><span className="effect-count">04</span></div>
         <div className="transition-list">
-          <div><span className="transition-glyph wipe-glyph">◧</span><span>Wipe reveal</span><small>0.8s</small></div>
-          <div><span className="transition-glyph blur-glyph">◌</span><span>Focus pull</span><small>0.8s</small></div>
-          <div><span className="transition-glyph flash-glyph">✦</span><span>Flash cut</span><small>0.1s</small></div>
-          <div><span className="transition-glyph zoom-glyph">◎</span><span>Camera punch</span><small>0.5s</small></div>
+          <div><span className="transition-glyph wipe-glyph">↗</span><span>Kinetic type</span><small>0.7s</small></div>
+          <div><span className="transition-glyph blur-glyph">◧</span><span>Editor wipe</span><small>0.6s</small></div>
+          <div><span className="transition-glyph flash-glyph">✦</span><span>Flash impact</span><small>0.1s</small></div>
+          <div><span className="transition-glyph zoom-glyph">◎</span><span>Whip / push</span><small>0.5s</small></div>
         </div>
         <div className="panel-note"><span>✦</span> EDIT CONTENT IN <b>src/main.jsx</b></div>
       </aside>
@@ -234,33 +266,75 @@ function App() {
         <section className={`stage ${effectClass}`} ref={root} style={{ '--accent': CONTENT.accent }}>
           <div className="camera-layer">
             <div className="grain" />
+            <div className="stage-grid" />
             <div className="scan" data-anim />
             <div className="flash" data-anim />
             <header className="topbar">
               <div><span className="brand-dot pulse-dot" />{CONTENT.brand}</div>
-              <div className="status"><span className="status-dot" />{status}</div>
+              <div className="status">{status}<span className="status-dot" /></div>
             </header>
-            <div className="content">
-              <div className="boot" data-anim><span className="muted">$</span> init {CONTENT.eyebrow.replace('// ', '')}</div>
-              <div className="boot tiny" data-anim>→ loading animation modules...</div>
-              <div className="boot tiny" data-anim>→ runtime ready</div>
-              <div className="title-block" data-anim>
-                <div className="eyebrow">{CONTENT.eyebrow}</div>
-                <h1>{CONTENT.title}</h1>
-                <p>{CONTENT.subtitle}</p>
-              </div>
-              <div className="editor" data-anim>
-                <div className="editor-head"><span>main.js</span><span>● ● ●</span></div>
-                <div className="code-body">{CONTENT.code.map((line, index) => <CodeLine key={index} index={index}>{highlightCode(line)}</CodeLine>)}</div>
-              </div>
-              <div className="keyword" data-anim>{CONTENT.keyword}</div>
-              <div className="data-grid">
-                <div className="metric" data-anim><div className="label">{CONTENT.metric.label}</div><div className="metric-value">{CONTENT.metric.prefix}{CONTENT.metric.from.toLocaleString()}</div><div className="delta">EXECUTING → COMPOUND</div></div>
-                <Graph values={CONTENT.graph} />
-              </div>
-              <div className="final" data-anim>{CONTENT.final}</div>
+            <div className="scene-stage">
+              <section className="motion-scene scene-intro">
+                <div className="intro-side-note">{CONTENT.eyebrow}</div>
+                <div className="intro-orb" />
+                <div className="intro-copy">
+                  <div className="intro-kicker"><span className="kicker-line" />IDEAS THAT<br />MOVE THE WORLD</div>
+                  <h1 className="intro-title"><KineticWords text={CONTENT.title} className="intro-words" /></h1>
+                  <div className="motion-rule intro-rule" />
+                  <p className="intro-subtitle">{CONTENT.subtitle}</p>
+                </div>
+                <div className="intro-index"><span>01</span><i />THE BIG IDEA</div>
+              </section>
+
+              <section className="motion-scene scene-code">
+                <div className="scene-meta"><span>02 / THE SYSTEM</span><span>INPUT → OUTPUT</span></div>
+                <div className="code-headline">MAKE THE<br /><em>NUMBERS</em><br />MOVE.</div>
+                <div className="editor">
+                  <div className="editor-head"><span>◈ &nbsp; wealth-engine.js</span><span>● ● ●</span></div>
+                  <div className="code-body">{CONTENT.code.map((line, index) => <CodeLine key={index} index={index}>{highlightCode(line)}</CodeLine>)}</div>
+                </div>
+                <div className="code-stamp"><span>COMPOUND</span><b>↗</b></div>
+                <div className="scene-footnote">A SMALL INPUT. A DIFFERENT OUTCOME.</div>
+              </section>
+
+              <section className="motion-scene scene-impact">
+                <div className="impact-top"><span>THE DIFFERENCE IS OWNERSHIP</span><span>03 / THE SHIFT</span></div>
+                <div className="impact-orbit orbit" />
+                <div className="impact-copy">
+                  <div className="impact-overline">DON'T JUST EARN IT.</div>
+                  <div className="impact-word"><KineticWords text={CONTENT.keyword} className="impact-words" /></div>
+                  <div className="impact-underline" />
+                  <div className="impact-bottom">BUILD WHAT<br /><b>BUILDS YOU.</b></div>
+                </div>
+                <div className="impact-side">SHIFT YOUR<br />PERSPECTIVE <span>✳</span></div>
+              </section>
+
+              <section className="motion-scene scene-data">
+                <div className="data-topline"><span>04 / THE COMPOUND EFFECT</span><span>LONG GAME / 01</span></div>
+                <div className="data-title">TIME IS<br /><em>THE MULTIPLIER.</em></div>
+                <div className="metric">
+                  <div className="data-kicker">{CONTENT.metric.label} <span>↗ COMPOUNDED</span></div>
+                  <div className="metric-value">{CONTENT.metric.prefix}{CONTENT.metric.from.toLocaleString()}</div>
+                  <Graph values={CONTENT.graph} />
+                  <div className="data-caption"><span>THE EARLY DAYS</span><span>THE BREAKTHROUGH</span><span>THE PAYOFF</span></div>
+                </div>
+                <div className="data-footnote">CONSISTENCY TURNS TIME INTO LEVERAGE.</div>
+              </section>
+
+              <section className="motion-scene scene-outro">
+                <div className="outro-backdrop">BUILD</div>
+                <div className="outro-index">05 / YOUR MOVE</div>
+                <div className="outro-copy">
+                  <div className="outro-kicker">THE NEXT CHAPTER IS YOURS</div>
+                  <div className="outro-title"><KineticWords text={CONTENT.final} className="outro-words" /></div>
+                  <div className="motion-rule outro-rule" />
+                  <p className="outro-subtitle">Think long. Build boldly. Let it compound.</p>
+                </div>
+                <div className="outro-cta"><span>START NOW</span><b>↗</b></div>
+              </section>
             </div>
-            <footer><span>{CONTENT.footer}</span><span>1080 × 1920 / 9:16</span></footer>
+            <div className="frame-corner corner-tl" /><div className="frame-corner corner-tr" />
+            <footer><span>{CONTENT.footer}</span><span>1080 × 1920 <i>·</i> 9:16</span></footer>
           </div>
         </section>
         <div className="preview-caption"><span><i className="caption-dot" />LIVE PREVIEW</span><span>DRAG PLAYHEAD TO SCRUB</span></div>
@@ -306,7 +380,7 @@ function App() {
           />
         </div>
       </div>
-      <div className="timeline-bottom"><span>SCENE TRANSITIONS <i>WIPE</i> <i>FOCUS</i> <i>FLASH</i></span><span>GSAP · NON-DESTRUCTIVE PREVIEW</span></div>
+      <div className="timeline-bottom"><span>SCENE TRANSITIONS <i>TYPE</i> <i>WIPE</i> <i>FLASH</i> <i>PUSH</i></span><span>GSAP · NON-DESTRUCTIVE PREVIEW</span></div>
     </section>
     <footer className="studio-footer"><span>KEDIT MOTION ENGINE <b>01.0</b></span><span>CONTENT-DRIVEN MOTION GRAPHICS</span><span className="footer-status"><i /> ALL CHANGES SAVED</span></footer>
   </main>;

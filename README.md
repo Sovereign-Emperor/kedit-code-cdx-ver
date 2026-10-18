@@ -24,7 +24,8 @@ The animation sequence and composition are reusable; ordinary content changes do
 ## Motion-design controls
 
 - **Timeline:** Play, pause, restart, and scrub the GSAP animation.
-- **Scene transitions:** The sequence uses a code-editor wipe, a focus-pull title reveal, a flash cut into the impact word, and a camera punch.
+- **Scene design:** Five distinct, full-frame portrait scenes replace the stacked dashboard-like layout: a cinematic title, kinetic code card, oversized impact typography, an animated growth chart, and a typographic closing card.
+- **Typography:** Headline and closing text reveal letter-by-letter. Scene transitions include a clipped code-editor wipe, blur/scale focus transitions, a restrained flash impact, and directional push-ins.
 - **Effects:** Toggle glow, film grain, and camera movement from the Effects panel.
 - **Composition:** Preview the design at a 9:16 aspect ratio for portrait social video.
 
