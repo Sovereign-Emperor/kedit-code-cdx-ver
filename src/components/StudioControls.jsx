@@ -1,6 +1,35 @@
 import React from 'react';
 import { EFFECTS, TRANSITION_STYLES } from '../motionPresets.js';
 
+export const EDIT_FORMATS = [
+  { id: 'motion', name: 'Motion Edit', detail: 'Five-scene sequence', icon: '▶' },
+  { id: 'carousel', name: 'Carousel', detail: 'Flat editorial cards', icon: '▤' },
+  { id: '3d-carousel', name: '3D Scenes', detail: 'Perspective carousel', icon: '◈' }
+];
+
+// Edit format changes the visual treatment; the independently selected pack
+// continues to supply the story and theme for every format.
+export function EditFormatSelector({ value, onChange, formats = EDIT_FORMATS }) {
+  return <>
+    <div className="panel-divider" />
+    <div className="pack-heading"><span>EDITS</span><span>{String(formats.length).padStart(2, '0')}</span></div>
+    <p className="panel-caption">Choose how this pack is presented.</p>
+    <div className="edit-format-list" role="group" aria-label="Edit format">
+      {formats.map(format => <button
+        className={`edit-format-card ${value === format.id ? 'is-selected' : ''}`}
+        type="button"
+        key={format.id}
+        aria-pressed={value === format.id}
+        onClick={() => onChange(format.id)}
+      >
+        <span className="edit-format-icon" aria-hidden="true">{format.icon}</span>
+        <span className="edit-format-copy"><strong>{format.name}</strong><small>{format.detail}</small></span>
+        <i className="edit-format-check" />
+      </button>)}
+    </div>
+  </>;
+}
+
 // Preset selector: parent owns selection so it can reset the matching timeline.
 export function ScenePackSelector({ packs, selectedId, onSelect }) {
   const selected = packs.find(pack => pack.id === selectedId) || packs[0];
@@ -76,7 +105,7 @@ export function TransitionList({ motion, value, onChange, styles = TRANSITION_ST
 }
 
 // Transport and scrub controls are shared by every selected scene pack.
-export function TimelinePanel({ clips, packName, progress, duration, playing, hasTimeline, onPlayPause, onReset, onSeek }) {
+export function TimelinePanel({ clips, packName, progress, duration, playing, hasTimeline, transportEnabled = true, onPlayPause, onReset, onSeek }) {
   const elapsed = progress === 1 ? Math.ceil(duration) : Math.floor(progress * duration);
   const formatTime = (seconds) => `00:${String(seconds).padStart(2, '0')}`;
 
@@ -84,8 +113,8 @@ export function TimelinePanel({ clips, packName, progress, duration, playing, ha
     <div className="timeline-top">
       <div className="timeline-title"><span className="timeline-icon">◷</span><strong>ANIMATION TIMELINE</strong><span className="timeline-duration">{formatTime(Math.ceil(duration))}</span></div>
       <div className="timeline-actions">
-        <button className="transport-button" onClick={onPlayPause} aria-label={playing ? 'Pause animation' : 'Play animation'}>{playing ? 'Ⅱ' : '▶'}</button>
-        <button className="transport-button reset-button" onClick={onReset} aria-label="Reset animation">↺</button>
+        <button className="transport-button" onClick={onPlayPause} disabled={!transportEnabled} aria-label={playing ? 'Pause animation' : 'Play animation'}>{playing ? 'Ⅱ' : '▶'}</button>
+        <button className="transport-button reset-button" onClick={onReset} disabled={!transportEnabled} aria-label="Reset animation">↺</button>
         <span className="time-readout">{formatTime(elapsed)} <i>/</i> {formatTime(Math.ceil(duration))}</span>
       </div>
     </div>
@@ -102,11 +131,11 @@ export function TimelinePanel({ clips, packName, progress, duration, playing, ha
           max="1"
           step="0.001"
           value={progress}
-          disabled={!hasTimeline}
+          disabled={!hasTimeline || !transportEnabled}
           onChange={event => onSeek(Number(event.target.value))}
         />
       </div>
     </div>
-    <div className="timeline-bottom"><span>ACTIVE PACK <i>{packName.toUpperCase()}</i> <i>TYPE</i> <i>WIPE</i> <i>FLASH</i></span><span>GSAP · REUSABLE SCENE ENGINE</span></div>
+    <div className="timeline-bottom"><span>ACTIVE PACK <i>{packName.toUpperCase()}</i> <i>TYPE</i> <i>WIPE</i> <i>FLASH</i></span><span>{transportEnabled ? 'GSAP · REUSABLE SCENE ENGINE' : 'EDIT PREVIEW · SELECT MOTION EDIT TO PLAY'}</span></div>
   </section>;
 }

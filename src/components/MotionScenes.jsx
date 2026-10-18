@@ -16,6 +16,8 @@ export function LineBreaks({ text, accentLine = -1, className = '' }) {
   </React.Fragment>)}</span>;
 }
 
+// Use for concise, content-driven display copy outside the scene timeline.
+// The visual treatment is shared; scene timing remains owned by GSAP.
 export function highlightCode(line) {
   const escaped = line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   return <span dangerouslySetInnerHTML={{ __html: escaped
@@ -37,6 +39,21 @@ export function Graph({ values }) {
   </div>;
 }
 
+// Reusable CSS 3D ornament; vary layer count and reuse it in other scenes.
+export function ThreeDOrb({ layers = 4 }) {
+  return <div className="three-d-orb" aria-hidden="true">
+    {Array.from({ length: layers }, (_, index) => <span
+      className="three-d-orb-ring"
+      key={index}
+      style={{
+        '--ring-angle': `${24 + index * 39}deg`,
+        '--ring-depth': `${(index % 2 ? 1 : -1) * (5 + index * 2)}px`
+      }}
+    />)}
+    <span className="three-d-orb-core" />
+  </div>;
+}
+
 export function MetricValue({ metric }) {
   const value = useRef(null);
   useLayoutEffect(() => {
@@ -50,7 +67,7 @@ export function MetricValue({ metric }) {
 export function IntroScene({ scene }) {
   return <section className="motion-scene scene-intro">
     <div className="intro-side-note">{scene.eyebrow}</div>
-    <div className="intro-orb" />
+    <ThreeDOrb />
     <div className="intro-copy">
       <div className="intro-kicker"><span className="kicker-line" /><LineBreaks text={scene.kicker} /></div>
       <h1 className="intro-title"><KineticWords text={scene.title} className="intro-words" /></h1>

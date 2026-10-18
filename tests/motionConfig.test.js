@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { BASE_CONTENT, createScenePack, SCENE_PACKS, TIMELINE_CLIPS } from '../src/scenePacks.js';
 import { EFFECTS, getTransitionStyle, TRANSITION_STYLES } from '../src/motionPresets.js';
+import { createCarouselSlides } from '../src/carouselContent.js';
 
 test('all scene packs satisfy the five-scene content contract', () => {
   assert.equal(SCENE_PACKS.length, 10);
@@ -73,4 +74,17 @@ test('timeline clips cover each scene exactly once and fill the full edit', () =
   assert.deepEqual(TIMELINE_CLIPS.map(clip => clip.key), sceneNames);
   assert.equal(TIMELINE_CLIPS.reduce((total, clip) => total + clip.width, 0), 100);
   assert.ok(TIMELINE_CLIPS.every(clip => clip.width > 0));
+});
+
+test('carousel content reuses every selected-pack scene and theme', () => {
+  const slides = createCarouselSlides(SCENE_PACKS[1].content);
+
+  assert.deepEqual(slides.map(slide => slide.id), ['intro', 'code', 'impact', 'data', 'outro']);
+  assert.ok(slides.every(slide => slide.title && slide.caption && slide.accent));
+  assert.equal(new Set(slides.map(slide => slide.id)).size, slides.length);
+  assert.ok(slides.every(slide => slide.accentIndex >= 0 && slide.accentIndex < slide.title.trim().split(/\s+/).length));
+  assert.equal(slides[0].title, SCENE_PACKS[1].content.scenes.intro.title);
+  assert.equal(slides[2].title, SCENE_PACKS[1].content.scenes.impact.word);
+  assert.equal(slides[3].title, `${SCENE_PACKS[1].content.scenes.data.metric.prefix}${SCENE_PACKS[1].content.scenes.data.metric.to.toLocaleString()}`);
+  assert.equal(slides[4].title, SCENE_PACKS[1].content.scenes.outro.title);
 });
