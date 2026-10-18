@@ -1,18 +1,6 @@
-# KEDIT-CODE Motion Engine v1.0
+# KEDIT-CODE Motion Engine
 
-A reusable, code-driven motion-graphics template for Sovereign Emperor short-form content.
-
-## Core idea
-
-**Code is the animation engine.** React renders the scene, JavaScript controls state, GSAP controls the timeline, CSS controls the visual system, and the CONTENT object supplies the story.
-
-## Stack
-
-- React
-- JavaScript
-- GSAP
-- CSS
-- Vite
+A reusable, code-driven motion-graphics studio for Sovereign Emperor short-form content. React renders a 9:16 composition, GSAP drives a replayable sequence, CSS defines the visual system, and the `CONTENT` object supplies the story.
 
 ## Run locally
 
@@ -21,52 +9,41 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL. Use **RUN CODE** to replay the animation and **RESET** to return to the initial state.
+Open the local Vite URL and use the animation timeline to play, pause, reset, or scrub through the preview.
 
-## Create another edit
+## Make another edit
 
-Open `src/main.jsx` and change only the `CONTENT` object near the top:
+Edit the `CONTENT` object near the top of `src/main.jsx`:
 
-- `title`
-- `subtitle`
-- `code`
-- `keyword`
-- `metric`
-- `graph`
-- `final`
-- `accent`
+- `title`, `subtitle`, and `eyebrow`
+- `code`, `keyword`, and `final`
+- `metric`, `graph`, `accent`, and footer/brand text
 
-The animation engine should not need to change for normal edits.
+The animation sequence and composition are reusable; ordinary content changes do not require changes to the engine.
 
-## 9:16 export
+## Motion-design controls
 
-The composition is designed around a 9:16 stage and displays its target as `1080 × 1920 / 9:16`. For final video capture, run the page in Chromium at a 1080×1920 viewport and record the stage with your preferred screen/video capture workflow. For automated rendering, add a browser automation layer such as Playwright and capture the stage frame-by-frame or as a video according to your production pipeline.
+- **Timeline:** Play, pause, restart, and scrub the GSAP animation.
+- **Scene transitions:** The sequence uses a code-editor wipe, a focus-pull title reveal, a flash cut into the impact word, and a camera punch.
+- **Effects:** Toggle glow, film grain, and camera movement from the Effects panel.
+- **Composition:** Preview the design at a 9:16 aspect ratio for portrait social video.
+
+This is a template-based motion-graphics preview, not a full nonlinear editor. It does not provide After Effects project files, arbitrary layer/keyframe editing, masks, tracking, audio editing, third-party effect plugins, or native video encoding.
+
+## Export
+
+The composition is designed for a 1080 × 1920 / 9:16 output. The browser preview does not encode a video file. For a quick capture, record the composition in Chromium at the target viewport size. For automated rendering, use browser automation to capture the composition and encode the frames using a video-rendering workflow such as Playwright plus FFmpeg.
 
 ## Architecture
 
 ```text
 CONTENT
    ↓
-React Scene
+React Composition
    ↓
-Reusable Components
+Reusable Visual Components
    ↓
-GSAP Timeline
+GSAP Timeline + Scene Transitions
    ↓
-Code / UI / Counter / Graph / Transitions
-   ↓
-9:16 Motion Graphics
+9:16 Motion Graphics Preview
 ```
-
-## KEDIT workflow
-
-1. Write the source script.
-2. Convert it into KEDIT-CODE scenes.
-3. Put the editable words/numbers into `CONTENT`.
-4. Run the project.
-5. Tune timings only when the narration needs a different rhythm.
-6. Capture/export at 1080×1920.
-
-## Design rule
-
-Do not make every video look like a generic hacker terminal. Use the code aesthetic as a visual language for business, finance, technology, systems, psychology, and entrepreneurship.
