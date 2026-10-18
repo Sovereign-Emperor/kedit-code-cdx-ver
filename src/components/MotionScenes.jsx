@@ -131,6 +131,10 @@ export function MotionScenes({ content, status, stageRef, effectClass }) {
     <div className="camera-layer">
       <div className="grain" />
       <div className="stage-grid" />
+      <div className="vignette" />
+      <div className="chromatic-overlay" />
+      <div className="light-leak" />
+      <div className="scanlines" />
       <div className="scan" data-anim />
       <div className="flash" data-anim />
       <header className="topbar">

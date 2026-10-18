@@ -65,6 +65,9 @@ button { font: inherit; }
 .transition-list small { color: #706c76; font: 7px 'DM Mono', monospace; }
 .transition-glyph { width: 17px; text-align: center; font-size: 11px; color: #b79a5d; }
 .blur-glyph { color: #a18fbb; }.flash-glyph { color: #e5ca79; }.zoom-glyph { color: #8ab2c0; }
+.transition-style-label { display: block; margin: 10px 0 5px; color: #77737e; font: 7px 'DM Mono', monospace; letter-spacing: .1em; }
+.transition-style-select { width: 100%; padding: 7px 6px; border: 1px solid #34313b; border-radius: 4px; background: #17151b; color: #d0cbd6; font-size: 8px; }
+.transition-style-select:focus-visible { outline: 1px solid #b79a5d; outline-offset: 2px; }
 .panel-note { margin-top: 18px; padding-top: 12px; border-top: 1px solid #27252d; color: #716e78; font: 7px 'DM Mono', monospace; }
 .panel-note span { color: #d2af59; margin-right: 4px; }.panel-note b { color: #c5b171; font-weight: 500; }
 .preview-column { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -192,6 +195,7 @@ button { font: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *:before, *:after { scroll-behavior: auto !important; }
+  .fx-lightLeak .light-leak { animation: none; }
 }
 
 .stage { background: #08080b; }
@@ -291,6 +295,20 @@ button { font: inherit; }
 .fx-glow .motion-rule, .fx-glow .impact-underline { box-shadow: 0 0 17px #d2ad54aa; }
 .fx-camera .camera-layer { transform-origin: 50% 48%; }
 .fx-grain .grain { opacity: .055; }
+/* Optional finishing layers are separate from scene animation for easy pack-level tuning. */
+.vignette, .chromatic-overlay, .light-leak, .scanlines { position: absolute; z-index: 4; inset: 0; pointer-events: none; opacity: 0; }
+.vignette { background: radial-gradient(ellipse at center, transparent 42%, #000b 100%); transition: opacity .3s ease; }
+.fx-vignette .vignette { opacity: .75; }
+.chromatic-overlay { background: linear-gradient(90deg, #ff28551c, transparent 18%, transparent 82%, #16d9ff1c); mix-blend-mode: screen; }
+.fx-chromatic .chromatic-overlay { opacity: .8; }
+.light-leak { background: radial-gradient(ellipse at 0 10%, #ff9a4c55, transparent 46%), radial-gradient(ellipse at 100% 80%, #ee58451e, transparent 38%); mix-blend-mode: screen; }
+.fx-lightLeak .light-leak { opacity: .7; animation: light-leak-drift 7s ease-in-out infinite alternate; }
+.scanlines { background: repeating-linear-gradient(to bottom, #fff 0 1px, transparent 1px 4px); mix-blend-mode: soft-light; }
+.fx-scanlines .scanlines { opacity: .055; }
+@keyframes light-leak-drift {
+  from { transform: translate3d(-3%, 0, 0) scale(1.04); }
+  to { transform: translate3d(3%, 0, 0) scale(1.1); }
+}
 .intro-title, .code-headline, .impact-words, .data-title, .metric-value, .outro-title { font-family: var(--display-font); }
 @media (max-width: 620px) {
   .intro-copy { top: 27%; }

@@ -29,7 +29,7 @@ const CONTENT = {
     displayFont: 'Inter, ui-sans-serif, system-ui, sans-serif'
   },
   // Starting state for the live effect switches in the left panel.
-  effects: { glow: true, grain: true, camera: true },
+  effects: { glow: true, grain: true, camera: true, vignette: true, chromatic: false, lightLeak: false, scanlines: false },
   brand: 'SOVEREIGN EMPEROR',
   footer: 'KEDIT-CODE / 001',
   // Edit the copy in each scene. Use \n in headline fields to choose line breaks.
@@ -186,6 +186,36 @@ const SCENE_PACKS = [
       data: { label: 'THE PRACTICE OF CHANGE', sideLabel: 'DAY BY DAY / 01', headline: 'SMALL SHIFTS.\nNEW DIRECTION.', metric: { label: 'NEW REPS', from: 0, to: 365, prefix: '' }, metricTrend: 'PRACTICED', graph: [9, 18, 22, 37, 50, 66, 81, 100], captions: ['NOTICE', 'PRACTICE', 'BECOME'], footnote: 'GROWTH IS BUILT IN THE RETURNING.' },
       outro: { label: 'YOUR NEXT CHOICE', backdrop: 'BEGIN', kicker: 'YOU ARE ALLOWED TO CHANGE', title: 'YOUR STORY IS STILL BEING WRITTEN.', subtitle: 'Take the next kind, brave step.', callToAction: 'TURN THE PAGE' }
     }
+  }),
+  createScenePack({
+    id: 'product-launch', name: 'Product Launch', description: 'Design & launch', accent: '#71d7c0',
+    scenes: {
+      intro: { eyebrow: '// PRODUCT_LAUNCH.v1', kicker: 'A BETTER WAY\nSTARTS HERE', title: 'MADE FOR THE MOMENT', subtitle: 'Thoughtful design turns everyday friction into a better flow.', label: 'MEET THE PRODUCT' },
+      code: { label: 'THE EXPERIENCE', inputLabel: 'FRICTION → FLOW', headline: 'LESS FRICTION.\nMORE\nPOSSIBILITY.', fileName: 'product-experience.ts', code: ['const need = listenToPeople();', 'design(removeFriction);', 'prototype(theFlow);', 'test(withRealUsers);', 'experience = clarity + care;'], stamp: 'DESIGNED', footnote: 'USEFUL BY DESIGN. SIMPLE BY DEFAULT.' },
+      impact: { label: 'THE PRODUCT PROMISE', eyebrow: 'THE BEST FEATURE IS HOW IT FEELS', overline: 'MAKE THE COMPLEX FEEL', word: 'SIMPLE', bottom: 'BUILT AROUND\nREAL LIFE.', sideNote: 'DESIGN FOR\nTHE HUMAN' },
+      data: { label: 'THE ADOPTION LOOP', sideLabel: 'VALUE / 01', headline: 'A BETTER\nDAILY FLOW.', metric: { label: 'MOMENTS SAVED', from: 0, to: 2400, prefix: '' }, metricTrend: 'EVERY WEEK', graph: [10, 19, 27, 39, 53, 69, 83, 100], captions: ['DISCOVER', 'MAKE IT EASY', 'COME BACK'], footnote: 'VALUE IS WHAT PEOPLE NOTICE AFTER THE FIRST USE.' },
+      outro: { label: 'THE NEXT RELEASE', backdrop: 'FLOW', kicker: 'GOOD IDEAS DESERVE GREAT EXECUTION', title: 'DESIGN FOR PEOPLE.', subtitle: 'Listen closely. Ship thoughtfully. Keep improving.', callToAction: 'EXPLORE THE IDEA' }
+    }
+  }),
+  createScenePack({
+    id: 'creative-craft', name: 'Creative Craft', description: 'Ideas into impact', accent: '#f2a66f',
+    scenes: {
+      intro: { eyebrow: '// CREATIVE_PRACTICE()', kicker: 'FOLLOW THE\nCURIOSITY', title: 'MAKE ROOM FOR IDEAS', subtitle: 'Original work grows where attention meets a little experimentation.', label: 'THE CREATIVE PROCESS' },
+      code: { label: 'THE PRACTICE', inputLabel: 'NOTICE → MAKE → REFINE', headline: 'START\nBEFORE\nIT IS PERFECT.', fileName: 'creative-practice.txt', code: ['collect(theSmallDetails);', 'follow(theQuestion);', 'make(aRoughVersion);', 'edit(withIntention);', 'finish = courage + craft;'], stamp: 'MAKE MORE', footnote: 'THE FIRST DRAFT IS A DOOR, NOT A VERDICT.' },
+      impact: { label: 'THE CREATIVE SHIFT', eyebrow: 'CURIOSITY IS A CREATIVE COMPASS', overline: 'MAKE THE THING ONLY', word: 'YOU CAN', bottom: 'THEN MAKE\nIT BETTER.', sideNote: 'STAY OPEN\nSTAY CURIOUS' },
+      data: { label: 'THE ITERATION ARC', sideLabel: 'DRAFT TO DONE', headline: 'IDEAS GET\nCLEARER IN MOTION.', metric: { label: 'ITERATIONS', from: 1, to: 32, prefix: '' }, metricTrend: 'REFINED', graph: [12, 20, 30, 39, 55, 68, 84, 100], captions: ['GATHER', 'MAKE', 'REFINE'], footnote: 'A LITTLE PROGRESS MAKES THE NEXT IDEA POSSIBLE.' },
+      outro: { label: 'YOUR NEXT IDEA', backdrop: 'MAKE', kicker: 'YOUR POINT OF VIEW IS THE INGREDIENT', title: 'MAKE IT REAL.', subtitle: 'Stay playful. Trust the process. Finish the work.', callToAction: 'MAKE A FIRST DRAFT' }
+    }
+  }),
+  createScenePack({
+    id: 'resilience', name: 'Resilient by Design', description: 'Adapt & keep going', accent: '#8bb8f4',
+    scenes: {
+      intro: { eyebrow: '// RESILIENCE.build()', kicker: 'WHEN THE PLAN\nCHANGES', title: 'ADAPT WITHOUT LOSING THE WHY', subtitle: 'A setback can change the route without changing what matters.', label: 'THE RESILIENT MINDSET' },
+      code: { label: 'THE ADAPTIVE LOOP', inputLabel: 'PAUSE → LEARN → ADAPT', headline: 'RESET.\nREFOCUS.\nRETURN.', fileName: 'adaptive-loop.js', code: ['notice(the obstacle);', 'separate(fact, fear);', 'choose(the next step);', 'adjust(the approach);', 'keep(what still matters);'], stamp: 'KEEP GOING', footnote: 'FLEXIBILITY IS A FORM OF STRENGTH.' },
+      impact: { label: 'THE TURNING POINT', eyebrow: 'YOU CAN CHANGE YOUR APPROACH', overline: 'WITHOUT GIVING UP THE', word: 'VISION', bottom: 'BEND THE\nROUTE.', sideNote: 'LEARN THEN\nMOVE FORWARD' },
+      data: { label: 'THE RECOVERY CURVE', sideLabel: 'STEP BY STEP', headline: 'THE RETURN\nIS THE PROGRESS.', metric: { label: 'SMALL RESETS', from: 0, to: 100, prefix: '' }, metricTrend: 'BUILDING TRUST', graph: [7, 15, 12, 29, 43, 59, 78, 100], captions: ['PAUSE', 'ADAPT', 'REBUILD'], footnote: 'PROGRESS IS NOT ALWAYS A STRAIGHT LINE.' },
+      outro: { label: 'THE NEXT STEP', backdrop: 'RISE', kicker: 'START AGAIN WITH WHAT YOU KNOW NOW', title: 'RETURN WITH PURPOSE.', subtitle: 'Take a breath. Find the next workable step.', callToAction: 'MOVE FORWARD' }
+    }
   })
 ];
 
@@ -203,20 +233,38 @@ function resetMetric(root, content) {
   if (value) value.textContent = `${metric.prefix}${metric.from.toLocaleString()}`;
 }
 
-function useTimeline(content) {
+function useTimeline(content, transitionStyle) {
   const root = useRef(null);
   const timeline = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(content.project.duration);
   const [status, setStatus] = useState('READY');
+  const enterState = () => ({
+    cinematic: { autoAlpha: 1, scale: 1.07, filter: 'blur(5px)' },
+    whip: { autoAlpha: 1, x: 75, rotation: 2, filter: 'blur(6px)' },
+    glitch: { autoAlpha: 0, x: 8, skewX: 5, filter: 'contrast(2)' },
+    wipe: { autoAlpha: 1, clipPath: 'inset(100% 0 0 0)' }
+  })[transitionStyle];
+  const settleState = () => ({
+    cinematic: { scale: 1, filter: 'blur(0px)', duration: 0.42, ease: 'power3.out' },
+    whip: { x: 0, rotation: 0, filter: 'blur(0px)', duration: 0.42, ease: 'power3.out' },
+    glitch: { autoAlpha: 1, x: 0, skewX: 0, filter: 'contrast(1)', duration: 0.32, ease: 'steps(4)' },
+    wipe: { clipPath: 'inset(0 0 0 0)', duration: 0.48, ease: 'power3.inOut' }
+  })[transitionStyle];
+  const exitState = () => ({
+    cinematic: { autoAlpha: 0, scale: 1.08, filter: 'blur(8px)', duration: content.motion.transition, ease: 'power2.in' },
+    whip: { autoAlpha: 0, x: -75, rotation: -2, filter: 'blur(5px)', duration: content.motion.transition, ease: 'power3.in' },
+    glitch: { autoAlpha: 0, x: -10, skewX: -6, filter: 'contrast(2)', duration: content.motion.transition * 0.7, ease: 'steps(3)' },
+    wipe: { autoAlpha: 0, clipPath: 'inset(0 0 100% 0)', duration: content.motion.transition, ease: 'power3.inOut' }
+  })[transitionStyle];
 
   const reset = () => {
     timeline.current?.kill();
     timeline.current = null;
     if (root.current) {
       gsap.set(root.current.querySelectorAll('[data-anim], .intro-words .kinetic-letter, .intro-kicker, .intro-subtitle, .editor, .code-line, .impact-words .kinetic-letter, .metric-value, .data-kicker, .data-caption, .graph-bar, .outro-words .kinetic-letter, .outro-subtitle, .motion-rule, .orbit'), { clearProps: 'all' });
-      gsap.set(root.current.querySelectorAll('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, rotation: 0, filter: 'blur(0px)' });
+      gsap.set(root.current.querySelectorAll('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, rotation: 0, skewX: 0, filter: 'blur(0px)', clipPath: 'inset(0 0 0 0)' });
       gsap.set(root.current.querySelector('.scene-intro'), { autoAlpha: 1 });
       gsap.set(root.current.querySelector('.flash'), { opacity: 0 });
       gsap.set(root.current.querySelector('.camera-layer'), { clearProps: 'all' });
@@ -239,7 +287,7 @@ function useTimeline(content) {
     const camera = root.current.querySelector('.camera-layer');
 
     gsap.set(q('[data-anim]'), { clearProps: 'all' });
-    gsap.set(q('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, filter: 'blur(0px)', clipPath: 'inset(0 0 0 0)' });
+    gsap.set(q('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, rotation: 0, skewX: 0, filter: 'blur(0px)', clipPath: 'inset(0 0 0 0)' });
     gsap.set(camera, { clearProps: 'all', scale: 1 });
     gsap.set(q('.intro-words .kinetic-letter'), { yPercent: 125, rotation: 8, opacity: 0 });
     gsap.set(q('.intro-kicker, .intro-subtitle'), { opacity: 0, y: 16 });
@@ -272,26 +320,27 @@ function useTimeline(content) {
       .to(q('.intro-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, duration: content.motion.typeDuration, stagger: { each: content.motion.typeStagger, from: 'start' }, ease: 'back.out(1.4)' })
       .to(q('.intro-kicker, .intro-subtitle'), { opacity: 1, y: 0, duration: 0.42, stagger: 0.12 }, '-=0.35')
       .to(q('.intro-rule'), { scaleX: 1, duration: 0.55, ease: 'power3.out' }, '-=0.3')
-      .to(q('.scene-intro'), { autoAlpha: 0, scale: 1.08, filter: 'blur(8px)', duration: content.motion.transition, ease: 'power2.in' }, '+=0.35')
+      .to(q('.scene-intro'), exitState(), '+=0.35')
       .addLabel('code')
-      .set(q('.scene-code'), { autoAlpha: 1 })
+      .set(q('.scene-code'), enterState())
       .call(() => setStatus('CODE'))
+      .to(q('.scene-code'), settleState())
       .to(q('.editor'), { clipPath: 'inset(0 0 0 0)', duration: content.motion.transition, ease: 'power3.inOut' })
       .to(q('.code-line'), { opacity: 1, x: 0, duration: 0.32, stagger: 0.12 }, '-=0.15')
       .to(q('.scan'), { xPercent: 140, duration: 0.8, ease: 'power2.inOut' }, '-=0.12')
-      .to(q('.scene-code'), { autoAlpha: 0, x: -45, filter: 'blur(6px)', duration: content.motion.transition, ease: 'power2.in' }, '+=0.38')
+      .to(q('.scene-code'), exitState(), '+=0.38')
       .addLabel('impact')
-      .set(q('.scene-impact'), { autoAlpha: 1, x: 55, filter: 'blur(5px)' })
+      .set(q('.scene-impact'), enterState())
       .call(() => setStatus('IMPACT'))
-      .to(q('.scene-impact'), { x: 0, filter: 'blur(0px)', duration: 0.38, ease: 'power3.out' })
+      .to(q('.scene-impact'), settleState())
       .to(q('.flash'), { opacity: content.motion.flashOpacity, duration: 0.055, yoyo: true, repeat: 1, ease: 'none' }, '<')
       .to(q('.impact-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, scale: 1, duration: content.motion.typeDuration, stagger: { each: content.motion.typeStagger, from: 'start' }, ease: 'back.out(1.7)' }, '-=0.16')
       .to(q('.orbit'), { scale: 1, duration: 0.7, ease: 'power2.out' }, '-=0.48')
-      .to(q('.scene-impact'), { autoAlpha: 0, scale: 0.92, rotation: 2, filter: 'blur(7px)', duration: content.motion.transition, ease: 'power2.in' }, '+=0.42')
+      .to(q('.scene-impact'), exitState(), '+=0.42')
       .addLabel('data')
-      .set(q('.scene-data'), { autoAlpha: 1, scale: 1.07, filter: 'blur(5px)' })
+      .set(q('.scene-data'), enterState())
       .call(() => setStatus('DATA'))
-      .to(q('.scene-data'), { scale: 1, filter: 'blur(0px)', duration: 0.42, ease: 'power3.out' })
+      .to(q('.scene-data'), settleState())
       .to(q('.data-kicker, .data-caption'), { opacity: 1, y: 0, duration: 0.38, stagger: 0.12 }, '-=0.24')
       .to(q('.metric-value'), { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.48, ease: 'back.out(1.5)' }, '-=0.2')
       .to(counter, {
@@ -305,11 +354,11 @@ function useTimeline(content) {
         }
       }, '-=0.05')
       .to(q('.graph-bar'), { scaleY: 1, duration: content.motion.chartDuration, stagger: content.motion.typeStagger * 2, ease: 'back.out(1.5)' }, '-=0.85')
-      .to(q('.scene-data'), { autoAlpha: 0, y: -35, filter: 'blur(6px)', duration: content.motion.transition, ease: 'power2.in' }, '+=0.32')
+      .to(q('.scene-data'), exitState(), '+=0.32')
       .addLabel('outro')
-      .set(q('.scene-outro'), { autoAlpha: 1, y: 35 })
+      .set(q('.scene-outro'), enterState())
       .call(() => setStatus('OUTRO'))
-      .to(q('.scene-outro'), { y: 0, duration: 0.38, ease: 'power3.out' })
+      .to(q('.scene-outro'), settleState())
       .to(q('.outro-words .kinetic-letter'), { yPercent: 0, opacity: 1, duration: content.motion.typeDuration, stagger: { each: content.motion.typeStagger, from: 'start' }, ease: 'power3.out' }, '-=0.18')
       .to(q('.outro-subtitle'), { opacity: 1, x: 0, duration: 0.4 }, '-=0.25')
       .to(q('.outro-rule'), { scaleX: 1, duration: 0.45 }, '-=0.28');
@@ -355,7 +404,8 @@ function App() {
   const [selectedPackId, setSelectedPackId] = useState(SCENE_PACKS[0].id);
   const selectedPack = SCENE_PACKS.find(pack => pack.id === selectedPackId) || SCENE_PACKS[0];
   const content = selectedPack.content;
-  const { root, run, reset, togglePlayback, seek, playing, progress, duration, status, hasTimeline } = useTimeline(content);
+  const [transitionStyle, setTransitionStyle] = useState('cinematic');
+  const { root, run, reset, togglePlayback, seek, playing, progress, duration, status, hasTimeline } = useTimeline(content, transitionStyle);
   const [effects, setEffects] = useState(content.effects);
   const effectClass = Object.entries(effects).filter(([, enabled]) => enabled).map(([name]) => `fx-${name}`).join(' ');
   const project = content.project;
@@ -369,6 +419,11 @@ function App() {
     reset();
     setSelectedPackId(pack.id);
     setEffects(pack.content.effects);
+  };
+
+  const selectTransitionStyle = (style) => {
+    reset();
+    setTransitionStyle(style);
   };
 
   return <main className="studio" style={{ '--accent': content.theme.accent }}>
@@ -388,7 +443,7 @@ function App() {
         </div>
         <ScenePackSelector packs={SCENE_PACKS} selectedId={selectedPack.id} onSelect={selectPack} />
         <EffectControls value={effects} onChange={toggleEffect} />
-        <TransitionList motion={content.motion} />
+        <TransitionList motion={content.motion} value={transitionStyle} onChange={selectTransitionStyle} />
         <div className="panel-note"><span>✦</span> EDIT CONTENT IN <b>src/main.jsx</b></div>
       </aside>
 

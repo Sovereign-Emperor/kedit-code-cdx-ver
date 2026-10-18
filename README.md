@@ -13,7 +13,7 @@ Open the local Vite URL and use the animation timeline to play, pause, reset, or
 
 ## Customize and reuse the template
 
-Choose a preset from **Scene Packs** in the studio to instantly swap the complete story and accent color. The library includes:
+Choose a preset from **Scene Packs** in the studio to instantly swap the complete story and accent color. The library includes ten reusable edit packs:
 
 - **Compound** — wealth, assets, and long-term growth.
 - **Founder Mode** — product-building, customers, and traction.
@@ -22,6 +22,9 @@ Choose a preset from **Scene Packs** in the studio to instantly swap the complet
 - **Fitness Mindset** — training, habits, and consistency.
 - **Future Systems** — emerging technology and human-centered ideas.
 - **Mindset Shift** — perspective, personal growth, and new choices.
+- **Product Launch** — product design, user experience, and adoption.
+- **Creative Craft** — curiosity, iteration, and finishing the work.
+- **Resilient by Design** — adapting to setbacks while keeping the purpose.
 
 Every preset reuses the same five scene layouts and animation engine. To add one, add an entry to `SCENE_PACKS` in `src/main.jsx`; `createScenePack` fills unspecified fields from the base content, so a preset only needs to override the parts it changes.
 
@@ -46,11 +49,11 @@ The five scene components share the same visual system and animation engine, so 
 
 - **Timeline:** Play, pause, restart, and scrub the GSAP animation.
 - **Scene design:** Five distinct, full-frame portrait scenes replace the stacked dashboard-like layout: a cinematic title, kinetic code card, oversized impact typography, an animated growth chart, and a typographic closing card.
-- **Typography:** Headline and closing text reveal letter-by-letter. Scene transitions include a clipped code-editor wipe, blur/scale focus transitions, a restrained flash impact, and directional push-ins.
-- **Effects:** Toggle glow, film grain, and camera movement from the Effects panel.
+- **Typography:** Headline and closing text reveal letter-by-letter. Choose cinematic blur, whip pan, signal glitch, or film wipe treatments from the Transitions panel.
+- **Effects:** Toggle bloom/glow, film grain, camera punch, lens vignette, chromatic split, light leak, and scanlines independently.
 - **Composition:** Preview the design at the configured aspect ratio and output dimensions.
 
-This is a template-based motion-graphics preview, not a full nonlinear editor. It does not provide After Effects project files, arbitrary layer/keyframe editing, masks, tracking, audio editing, third-party effect plugins, or native video encoding.
+This is a template-based motion-graphics preview, not a full nonlinear editor or a replacement for After Effects or Premiere Pro. Treatments are implemented in the browser with GSAP and CSS. The app does not provide native Adobe project files, arbitrary layer/keyframe editing, masks, tracking, audio editing, third-party effect plugins, or native video encoding.
 
 ## Export
 

@@ -26,7 +26,11 @@ export function ScenePackSelector({ packs, selectedId, onSelect }) {
 const EFFECTS = [
   { key: 'glow', icon: '✳', title: 'Bloom / Glow', description: 'Highlight emission' },
   { key: 'grain', icon: '▦', title: 'Film Grain', description: 'Fine texture overlay' },
-  { key: 'camera', icon: '◉', title: 'Camera Punch', description: 'Subtle push-in move' }
+  { key: 'camera', icon: '◉', title: 'Camera Punch', description: 'Subtle push-in move' },
+  { key: 'vignette', icon: '◉', title: 'Lens Vignette', description: 'Edge-focused contrast' },
+  { key: 'chromatic', icon: '⌁', title: 'Chromatic Split', description: 'Subtle RGB edge fringing' },
+  { key: 'lightLeak', icon: '☼', title: 'Light Leak', description: 'Warm animated film flare' },
+  { key: 'scanlines', icon: '▤', title: 'Scanlines', description: 'Fine analog texture' }
 ];
 
 // Effect rows are data-driven, so new toggles do not duplicate panel markup.
@@ -50,7 +54,14 @@ export function EffectControls({ value, onChange }) {
   </>;
 }
 
-export function TransitionList({ motion }) {
+const TRANSITION_STYLES = [
+  { id: 'cinematic', label: 'Cinematic blur', detail: 'Depth + soft focus' },
+  { id: 'whip', label: 'Whip pan', detail: 'Fast directional movement' },
+  { id: 'glitch', label: 'Signal glitch', detail: 'Digital split + snap' },
+  { id: 'wipe', label: 'Film wipe', detail: 'Directional matte reveal' }
+];
+
+export function TransitionList({ motion, value, onChange }) {
   const transitions = [
     { icon: '↗', className: 'wipe-glyph', label: 'Kinetic type', duration: motion.typeDuration },
     { icon: '◧', className: 'blur-glyph', label: 'Editor wipe', duration: motion.transition },
@@ -68,6 +79,10 @@ export function TransitionList({ motion }) {
         <small>{item.duration.toFixed(1)}s</small>
       </div>)}
     </div>
+    <label className="transition-style-label" htmlFor="transition-style">EDIT TREATMENT</label>
+    <select id="transition-style" className="transition-style-select" value={value} onChange={event => onChange(event.target.value)}>
+      {TRANSITION_STYLES.map(style => <option value={style.id} key={style.id}>{style.label} — {style.detail}</option>)}
+    </select>
   </>;
 }
 
