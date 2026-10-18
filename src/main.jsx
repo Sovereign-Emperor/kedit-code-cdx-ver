@@ -3,39 +3,119 @@ import { createRoot } from 'react-dom/client';
 import gsap from 'gsap';
 import './styles.css';
 
+// ============================================================
+// EDIT PACK: customize this object to create a new video.
+// CONTENT changes the story; THEME changes its colors/type;
+// MOTION changes pacing and transitions. Keep the engine below.
+// Use short headlines so they fit the portrait-safe area.
+// ============================================================
 const CONTENT = {
+  // Output canvas and project labels. Change the dimensions together to switch format.
+  project: {
+    name: 'UNTITLED PROJECT',
+    format: '9:16 SOCIAL',
+    aspectRatio: '9:16',
+    width: 1080,
+    height: 1920,
+    fps: 30,
+    duration: 13
+  },
+  // Brand colors and typeface. Accent is reused for highlight text and motion accents.
+  theme: {
+    accent: '#c7a34b',
+    background: '#08080b',
+    displayFont: 'Inter, ui-sans-serif, system-ui, sans-serif'
+  },
+  // Starting state for the live effect switches in the left panel.
+  effects: { glow: true, grain: true, camera: true },
   brand: 'SOVEREIGN EMPEROR',
-  eyebrow: '// WEALTH_ENGINE.js',
-  title: 'THE WEALTH EQUATION',
-  subtitle: 'Income starts the game. Ownership changes the game.',
-  code: [
-    'const income = 1000;',
-    'let assets = 0;',
-    'assets += skills;',
-    'assets *= time;',
-    'wealth = assets + cashflow;'
-  ],
-  keyword: 'OWNERSHIP',
-  metric: { label: 'ASSET VALUE', from: 1000, to: 100000, prefix: '$' },
-  graph: [8, 13, 17, 29, 42, 58, 78, 100],
-  final: 'BUILD ASSETS. COMPOUND VALUE.',
   footer: 'KEDIT-CODE / 001',
-  accent: '#c7a34b'
+  // Edit the copy in each scene. Use \n in headline fields to choose line breaks.
+  scenes: {
+    // Intro: the primary hook and first on-screen promise.
+    intro: {
+      index: '01',
+      eyebrow: '// WEALTH_ENGINE.js',
+      kicker: 'IDEAS THAT\nMOVE THE WORLD',
+      title: 'THE WEALTH EQUATION',
+      subtitle: 'Income starts the game. Ownership changes the game.',
+      label: 'THE BIG IDEA'
+    },
+    // Code: the visual metaphor or steps that support the hook.
+    code: {
+      index: '02',
+      label: 'THE SYSTEM',
+      inputLabel: 'INPUT → OUTPUT',
+      headline: 'MAKE THE\nNUMBERS\nMOVE.',
+      fileName: 'wealth-engine.js',
+      code: [
+        'const income = 1000;',
+        'let assets = 0;',
+        'assets += skills;',
+        'assets *= time;',
+        'wealth = assets + cashflow;'
+      ],
+      stamp: 'COMPOUND',
+      footnote: 'A SMALL INPUT. A DIFFERENT OUTCOME.'
+    },
+    // Impact: one short word/phrase gets the strongest kinetic reveal.
+    impact: {
+      index: '03',
+      label: 'THE SHIFT',
+      eyebrow: 'THE DIFFERENCE IS OWNERSHIP',
+      overline: "DON'T JUST EARN IT.",
+      word: 'OWNERSHIP',
+      bottom: 'BUILD WHAT\nBUILDS YOU.',
+      sideNote: 'SHIFT YOUR\nPERSPECTIVE'
+    },
+    // Data: the counter and 0-100 graph make the idea measurable.
+    data: {
+      index: '04',
+      label: 'THE COMPOUND EFFECT',
+      sideLabel: 'LONG GAME / 01',
+      headline: 'TIME IS\nTHE MULTIPLIER.',
+      metric: { label: 'ASSET VALUE', from: 1000, to: 100000, prefix: '$' },
+      metricTrend: 'COMPOUNDED',
+      graph: [8, 13, 17, 29, 42, 58, 78, 100],
+      captions: ['THE EARLY DAYS', 'THE BREAKTHROUGH', 'THE PAYOFF'],
+      footnote: 'CONSISTENCY TURNS TIME INTO LEVERAGE.'
+    },
+    // Outro: short call-to-action for the final frame.
+    outro: {
+      index: '05',
+      label: 'YOUR MOVE',
+      backdrop: 'BUILD',
+      kicker: 'THE NEXT CHAPTER IS YOURS',
+      title: 'BUILD ASSETS. COMPOUND VALUE.',
+      subtitle: 'Think long. Build boldly. Let it compound.',
+      callToAction: 'START NOW'
+    }
+  },
+  // Values are seconds. Change the total duration when you change pacing.
+  motion: {
+    transition: 0.4,
+    typeDuration: 0.65,
+    typeStagger: 0.025,
+    metricDuration: 1.2,
+    chartDuration: 0.48,
+    flashOpacity: 0.16,
+    cameraScale: 1.045,
+    cameraDuration: 0.5
+  },
 };
 
-const TIMELINE_DURATION = 13;
-
 const CLIPS = [
-  { label: '01  INTRO', width: 19 },
-  { label: '02  CODE', width: 23 },
-  { label: '03  IMPACT', width: 19 },
-  { label: '04  DATA', width: 22 },
-  { label: '05  OUTRO', width: 17 }
+  { key: 'intro', width: 19 },
+  { key: 'code', width: 23 },
+  { key: 'impact', width: 19 },
+  { key: 'data', width: 22 },
+  { key: 'outro', width: 17 }
 ];
 
 function resetMetric(root) {
   const value = root?.querySelector('.metric-value');
-  if (value) value.textContent = `${CONTENT.metric.prefix}${CONTENT.metric.from.toLocaleString()}`;
+  const metric = CONTENT.scenes.data.metric;
+  if (value) value.textContent = `${metric.prefix}${metric.from.toLocaleString()}`;
 }
 
 function formatTime(seconds) {
@@ -55,14 +135,14 @@ function useTimeline() {
   const timeline = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(TIMELINE_DURATION);
+  const [duration, setDuration] = useState(CONTENT.project.duration);
   const [status, setStatus] = useState('READY');
 
   const reset = () => {
     timeline.current?.kill();
     timeline.current = null;
     if (root.current) {
-      gsap.set(root.current.querySelectorAll('[data-anim]'), { clearProps: 'all' });
+      gsap.set(root.current.querySelectorAll('[data-anim], .intro-words .kinetic-letter, .intro-kicker, .intro-subtitle, .editor, .code-line, .impact-words .kinetic-letter, .metric-value, .data-kicker, .data-caption, .graph-bar, .outro-words .kinetic-letter, .outro-subtitle, .motion-rule, .orbit'), { clearProps: 'all' });
       gsap.set(root.current.querySelectorAll('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, rotation: 0, filter: 'blur(0px)' });
       gsap.set(root.current.querySelector('.scene-intro'), { autoAlpha: 1 });
       gsap.set(root.current.querySelector('.flash'), { opacity: 0 });
@@ -102,7 +182,7 @@ function useTimeline() {
     gsap.set(q('.flash'), { opacity: 0 });
     gsap.set(q('.motion-rule, .orbit'), { scaleX: 0, scaleY: 0, transformOrigin: 'center' });
 
-    const counter = { value: CONTENT.metric.from };
+    const counter = { value: CONTENT.scenes.data.metric.from };
     const tl = gsap.timeline({
       defaults: { ease: 'power3.out' },
       onUpdate: () => setProgress(tl.progress()),
@@ -116,25 +196,25 @@ function useTimeline() {
     tl.addLabel('intro')
       .set(q('.scene-intro'), { autoAlpha: 1 })
       .call(() => setStatus('INTRO'))
-      .to(q('.intro-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, duration: 0.65, stagger: { each: 0.025, from: 'start' }, ease: 'back.out(1.4)' })
+      .to(q('.intro-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, duration: CONTENT.motion.typeDuration, stagger: { each: CONTENT.motion.typeStagger, from: 'start' }, ease: 'back.out(1.4)' })
       .to(q('.intro-kicker, .intro-subtitle'), { opacity: 1, y: 0, duration: 0.42, stagger: 0.12 }, '-=0.35')
       .to(q('.intro-rule'), { scaleX: 1, duration: 0.55, ease: 'power3.out' }, '-=0.3')
-      .to(q('.scene-intro'), { autoAlpha: 0, scale: 1.08, filter: 'blur(8px)', duration: 0.48, ease: 'power2.in' }, '+=0.35')
+      .to(q('.scene-intro'), { autoAlpha: 0, scale: 1.08, filter: 'blur(8px)', duration: CONTENT.motion.transition, ease: 'power2.in' }, '+=0.35')
       .addLabel('code')
       .set(q('.scene-code'), { autoAlpha: 1 })
       .call(() => setStatus('CODE'))
-      .to(q('.editor'), { clipPath: 'inset(0 0 0 0)', duration: 0.62, ease: 'power3.inOut' })
+      .to(q('.editor'), { clipPath: 'inset(0 0 0 0)', duration: CONTENT.motion.transition, ease: 'power3.inOut' })
       .to(q('.code-line'), { opacity: 1, x: 0, duration: 0.32, stagger: 0.12 }, '-=0.15')
       .to(q('.scan'), { xPercent: 140, duration: 0.8, ease: 'power2.inOut' }, '-=0.12')
-      .to(q('.scene-code'), { autoAlpha: 0, x: -45, filter: 'blur(6px)', duration: 0.38, ease: 'power2.in' }, '+=0.38')
+      .to(q('.scene-code'), { autoAlpha: 0, x: -45, filter: 'blur(6px)', duration: CONTENT.motion.transition, ease: 'power2.in' }, '+=0.38')
       .addLabel('impact')
       .set(q('.scene-impact'), { autoAlpha: 1, x: 55, filter: 'blur(5px)' })
       .call(() => setStatus('IMPACT'))
       .to(q('.scene-impact'), { x: 0, filter: 'blur(0px)', duration: 0.38, ease: 'power3.out' })
-      .to(q('.flash'), { opacity: 0.16, duration: 0.055, yoyo: true, repeat: 1, ease: 'none' }, '<')
-      .to(q('.impact-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, scale: 1, duration: 0.52, stagger: 0.035, ease: 'back.out(1.7)' }, '-=0.16')
+      .to(q('.flash'), { opacity: CONTENT.motion.flashOpacity, duration: 0.055, yoyo: true, repeat: 1, ease: 'none' }, '<')
+      .to(q('.impact-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, scale: 1, duration: CONTENT.motion.typeDuration, stagger: { each: CONTENT.motion.typeStagger, from: 'start' }, ease: 'back.out(1.7)' }, '-=0.16')
       .to(q('.orbit'), { scale: 1, duration: 0.7, ease: 'power2.out' }, '-=0.48')
-      .to(q('.scene-impact'), { autoAlpha: 0, scale: 0.92, rotation: 2, filter: 'blur(7px)', duration: 0.4, ease: 'power2.in' }, '+=0.42')
+      .to(q('.scene-impact'), { autoAlpha: 0, scale: 0.92, rotation: 2, filter: 'blur(7px)', duration: CONTENT.motion.transition, ease: 'power2.in' }, '+=0.42')
       .addLabel('data')
       .set(q('.scene-data'), { autoAlpha: 1, scale: 1.07, filter: 'blur(5px)' })
       .call(() => setStatus('DATA'))
@@ -142,30 +222,31 @@ function useTimeline() {
       .to(q('.data-kicker, .data-caption'), { opacity: 1, y: 0, duration: 0.38, stagger: 0.12 }, '-=0.24')
       .to(q('.metric-value'), { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.48, ease: 'back.out(1.5)' }, '-=0.2')
       .to(counter, {
-        value: CONTENT.metric.to,
-        duration: 1.2,
+        value: CONTENT.scenes.data.metric.to,
+        duration: CONTENT.motion.metricDuration,
         ease: 'power2.out',
         onUpdate: () => {
           const value = root.current?.querySelector('.metric-value');
-          if (value) value.textContent = `${CONTENT.metric.prefix}${Math.round(counter.value).toLocaleString()}`;
+          const metric = CONTENT.scenes.data.metric;
+          if (value) value.textContent = `${metric.prefix}${Math.round(counter.value).toLocaleString()}`;
         }
       }, '-=0.05')
-      .to(q('.graph-bar'), { scaleY: 1, duration: 0.48, stagger: 0.055, ease: 'back.out(1.5)' }, '-=0.85')
-      .to(q('.scene-data'), { autoAlpha: 0, y: -35, filter: 'blur(6px)', duration: 0.42, ease: 'power2.in' }, '+=0.32')
+      .to(q('.graph-bar'), { scaleY: 1, duration: CONTENT.motion.chartDuration, stagger: CONTENT.motion.typeStagger * 2, ease: 'back.out(1.5)' }, '-=0.85')
+      .to(q('.scene-data'), { autoAlpha: 0, y: -35, filter: 'blur(6px)', duration: CONTENT.motion.transition, ease: 'power2.in' }, '+=0.32')
       .addLabel('outro')
       .set(q('.scene-outro'), { autoAlpha: 1, y: 35 })
       .call(() => setStatus('OUTRO'))
       .to(q('.scene-outro'), { y: 0, duration: 0.38, ease: 'power3.out' })
-      .to(q('.outro-words .kinetic-letter'), { yPercent: 0, opacity: 1, duration: 0.52, stagger: 0.025, ease: 'power3.out' }, '-=0.18')
+      .to(q('.outro-words .kinetic-letter'), { yPercent: 0, opacity: 1, duration: CONTENT.motion.typeDuration, stagger: { each: CONTENT.motion.typeStagger, from: 'start' }, ease: 'power3.out' }, '-=0.18')
       .to(q('.outro-subtitle'), { opacity: 1, x: 0, duration: 0.4 }, '-=0.25')
       .to(q('.outro-rule'), { scaleX: 1, duration: 0.45 }, '-=0.28');
 
     if (root.current.classList.contains('fx-camera')) {
-      tl.to(camera, { scale: 1.045, duration: 0.5, yoyo: true, repeat: 1, ease: 'power2.inOut' }, '-=0.35');
+      tl.to(camera, { scale: CONTENT.motion.cameraScale, duration: CONTENT.motion.cameraDuration, yoyo: true, repeat: 1, ease: 'power2.inOut' }, '-=0.35');
     }
 
     tl.to(q('.pulse-dot'), { scale: 1.5, opacity: 0.3, duration: 0.25, yoyo: true, repeat: 3 }, '<');
-    tl.to({}, { duration: Math.max(0, TIMELINE_DURATION - tl.duration()) });
+    tl.to({}, { duration: Math.max(0, CONTENT.project.duration - tl.duration()) });
     setDuration(tl.duration());
   };
 
@@ -212,19 +293,21 @@ function Graph({ values }) {
 
 function App() {
   const { root, run, reset, togglePlayback, seek, playing, progress, duration, status, hasTimeline } = useTimeline();
-  const [effects, setEffects] = useState({ glow: true, grain: true, camera: true });
+  const [effects, setEffects] = useState(CONTENT.effects);
   const effectClass = Object.entries(effects).filter(([, enabled]) => enabled).map(([name]) => `fx-${name}`).join(' ');
   const playhead = `${progress * 100}%`;
   const elapsed = progress === 1 ? Math.ceil(duration) : Math.floor(progress * duration);
+  const project = CONTENT.project;
+  const scenes = CONTENT.scenes;
 
   const toggleEffect = (effect) => {
     setEffects(current => ({ ...current, [effect]: !current[effect] }));
   };
 
-  return <main className="studio">
+  return <main className="studio" style={{ '--accent': CONTENT.theme.accent }}>
     <header className="studio-header">
       <div className="studio-brand"><span className="brand-mark">K</span><span>KEDIT<span className="brand-muted"> / MOTION</span></span></div>
-      <div className="project-name"><span className="live-dot" />UNTITLED PROJECT <span className="project-separator">/</span> 9:16 SOCIAL</div>
+      <div className="project-name"><span className="live-dot" />{project.name} <span className="project-separator">/</span> {project.format}</div>
       <div className="header-version">MOTION ENGINE <span>01</span></div>
     </header>
 
@@ -232,8 +315,8 @@ function App() {
       <aside className="side-panel">
         <div className="panel-heading"><span>COMPOSITION</span><span className="panel-menu">•••</span></div>
         <div className="composition-card">
-          <div className="composition-thumb"><span>9:16</span><i /></div>
-          <div><strong>Portrait 1080</strong><small>1080 × 1920 · 30 FPS</small></div>
+          <div className="composition-thumb"><span>{project.aspectRatio}</span><i /></div>
+          <div><strong>Portrait {project.width}</strong><small>{project.width} × {project.height} · {project.fps} FPS</small></div>
           <span className="active-indicator" />
         </div>
         <div className="panel-divider" />
@@ -253,17 +336,17 @@ function App() {
         <div className="panel-divider" />
         <div className="panel-heading"><span>TRANSITIONS</span><span className="effect-count">04</span></div>
         <div className="transition-list">
-          <div><span className="transition-glyph wipe-glyph">↗</span><span>Kinetic type</span><small>0.7s</small></div>
-          <div><span className="transition-glyph blur-glyph">◧</span><span>Editor wipe</span><small>0.6s</small></div>
+          <div><span className="transition-glyph wipe-glyph">↗</span><span>Kinetic type</span><small>{CONTENT.motion.typeDuration.toFixed(1)}s</small></div>
+          <div><span className="transition-glyph blur-glyph">◧</span><span>Editor wipe</span><small>{CONTENT.motion.transition.toFixed(1)}s</small></div>
           <div><span className="transition-glyph flash-glyph">✦</span><span>Flash impact</span><small>0.1s</small></div>
-          <div><span className="transition-glyph zoom-glyph">◎</span><span>Whip / push</span><small>0.5s</small></div>
+          <div><span className="transition-glyph zoom-glyph">◎</span><span>Camera punch</span><small>{CONTENT.motion.cameraDuration.toFixed(1)}s</small></div>
         </div>
         <div className="panel-note"><span>✦</span> EDIT CONTENT IN <b>src/main.jsx</b></div>
       </aside>
 
       <section className="preview-column" aria-label="Composition preview">
         <div className="preview-toolbar"><span><i className="toolbar-dot" />COMPOSITION VIEW</span><span>FIT <b>100%</b></span></div>
-        <section className={`stage ${effectClass}`} ref={root} style={{ '--accent': CONTENT.accent }}>
+        <section className={`stage ${effectClass}`} ref={root} style={{ '--accent': CONTENT.theme.accent, '--scene-background': CONTENT.theme.background, '--display-font': CONTENT.theme.displayFont, '--frame-width': project.width, '--frame-height': project.height }}>
           <div className="camera-layer">
             <div className="grain" />
             <div className="stage-grid" />
@@ -275,66 +358,66 @@ function App() {
             </header>
             <div className="scene-stage">
               <section className="motion-scene scene-intro">
-                <div className="intro-side-note">{CONTENT.eyebrow}</div>
+                <div className="intro-side-note">{scenes.intro.eyebrow}</div>
                 <div className="intro-orb" />
                 <div className="intro-copy">
-                  <div className="intro-kicker"><span className="kicker-line" />IDEAS THAT<br />MOVE THE WORLD</div>
-                  <h1 className="intro-title"><KineticWords text={CONTENT.title} className="intro-words" /></h1>
+                  <div className="intro-kicker"><span className="kicker-line" />{scenes.intro.kicker.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{line}</React.Fragment>)}</div>
+                  <h1 className="intro-title"><KineticWords text={scenes.intro.title} className="intro-words" /></h1>
                   <div className="motion-rule intro-rule" />
-                  <p className="intro-subtitle">{CONTENT.subtitle}</p>
+                  <p className="intro-subtitle">{scenes.intro.subtitle}</p>
                 </div>
-                <div className="intro-index"><span>01</span><i />THE BIG IDEA</div>
+                <div className="intro-index"><span>{scenes.intro.index}</span><i />{scenes.intro.label}</div>
               </section>
 
               <section className="motion-scene scene-code">
-                <div className="scene-meta"><span>02 / THE SYSTEM</span><span>INPUT → OUTPUT</span></div>
-                <div className="code-headline">MAKE THE<br /><em>NUMBERS</em><br />MOVE.</div>
+                <div className="scene-meta"><span>{scenes.code.index} / {scenes.code.label}</span><span>{scenes.code.inputLabel}</span></div>
+                <div className="code-headline">{scenes.code.headline.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{index === 1 ? <em>{line}</em> : line}</React.Fragment>)}</div>
                 <div className="editor">
-                  <div className="editor-head"><span>◈ &nbsp; wealth-engine.js</span><span>● ● ●</span></div>
-                  <div className="code-body">{CONTENT.code.map((line, index) => <CodeLine key={index} index={index}>{highlightCode(line)}</CodeLine>)}</div>
+                  <div className="editor-head"><span>◈ &nbsp; {scenes.code.fileName}</span><span>● ● ●</span></div>
+                  <div className="code-body">{scenes.code.code.map((line, index) => <CodeLine key={index} index={index}>{highlightCode(line)}</CodeLine>)}</div>
                 </div>
-                <div className="code-stamp"><span>COMPOUND</span><b>↗</b></div>
-                <div className="scene-footnote">A SMALL INPUT. A DIFFERENT OUTCOME.</div>
+                <div className="code-stamp"><span>{scenes.code.stamp}</span><b>↗</b></div>
+                <div className="scene-footnote">{scenes.code.footnote}</div>
               </section>
 
               <section className="motion-scene scene-impact">
-                <div className="impact-top"><span>THE DIFFERENCE IS OWNERSHIP</span><span>03 / THE SHIFT</span></div>
+                <div className="impact-top"><span>{scenes.impact.eyebrow}</span><span>{scenes.impact.index} / {scenes.impact.label}</span></div>
                 <div className="impact-orbit orbit" />
                 <div className="impact-copy">
-                  <div className="impact-overline">DON'T JUST EARN IT.</div>
-                  <div className="impact-word"><KineticWords text={CONTENT.keyword} className="impact-words" /></div>
+                  <div className="impact-overline">{scenes.impact.overline}</div>
+                  <div className="impact-word"><KineticWords text={scenes.impact.word} className="impact-words" /></div>
                   <div className="impact-underline" />
-                  <div className="impact-bottom">BUILD WHAT<br /><b>BUILDS YOU.</b></div>
+                  <div className="impact-bottom">{scenes.impact.bottom.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{index === 1 ? <b>{line}</b> : line}</React.Fragment>)}</div>
                 </div>
-                <div className="impact-side">SHIFT YOUR<br />PERSPECTIVE <span>✳</span></div>
+                <div className="impact-side">{scenes.impact.sideNote.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{line}</React.Fragment>)} <span>✳</span></div>
               </section>
 
               <section className="motion-scene scene-data">
-                <div className="data-topline"><span>04 / THE COMPOUND EFFECT</span><span>LONG GAME / 01</span></div>
-                <div className="data-title">TIME IS<br /><em>THE MULTIPLIER.</em></div>
+                <div className="data-topline"><span>{scenes.data.index} / {scenes.data.label}</span><span>{scenes.data.sideLabel}</span></div>
+                <div className="data-title">{scenes.data.headline.split('\n').map((line, index) => <React.Fragment key={line}>{index > 0 && <br />}{index === 1 ? <em>{line}</em> : line}</React.Fragment>)}</div>
                 <div className="metric">
-                  <div className="data-kicker">{CONTENT.metric.label} <span>↗ COMPOUNDED</span></div>
-                  <div className="metric-value">{CONTENT.metric.prefix}{CONTENT.metric.from.toLocaleString()}</div>
-                  <Graph values={CONTENT.graph} />
-                  <div className="data-caption"><span>THE EARLY DAYS</span><span>THE BREAKTHROUGH</span><span>THE PAYOFF</span></div>
+                  <div className="data-kicker">{scenes.data.metric.label} <span>↗ {scenes.data.metricTrend}</span></div>
+                  <div className="metric-value">{scenes.data.metric.prefix}{scenes.data.metric.from.toLocaleString()}</div>
+                  <Graph values={scenes.data.graph} />
+                  <div className="data-caption">{scenes.data.captions.map(caption => <span key={caption}>{caption}</span>)}</div>
                 </div>
-                <div className="data-footnote">CONSISTENCY TURNS TIME INTO LEVERAGE.</div>
+                <div className="data-footnote">{scenes.data.footnote}</div>
               </section>
 
               <section className="motion-scene scene-outro">
-                <div className="outro-backdrop">BUILD</div>
-                <div className="outro-index">05 / YOUR MOVE</div>
+                <div className="outro-backdrop">{scenes.outro.backdrop}</div>
+                <div className="outro-index">{scenes.outro.index} / {scenes.outro.label}</div>
                 <div className="outro-copy">
-                  <div className="outro-kicker">THE NEXT CHAPTER IS YOURS</div>
-                  <div className="outro-title"><KineticWords text={CONTENT.final} className="outro-words" /></div>
+                  <div className="outro-kicker">{scenes.outro.kicker}</div>
+                  <div className="outro-title"><KineticWords text={scenes.outro.title} className="outro-words" /></div>
                   <div className="motion-rule outro-rule" />
-                  <p className="outro-subtitle">Think long. Build boldly. Let it compound.</p>
+                  <p className="outro-subtitle">{scenes.outro.subtitle}</p>
                 </div>
-                <div className="outro-cta"><span>START NOW</span><b>↗</b></div>
+                <div className="outro-cta"><span>{scenes.outro.callToAction}</span><b>↗</b></div>
               </section>
             </div>
             <div className="frame-corner corner-tl" /><div className="frame-corner corner-tr" />
-            <footer><span>{CONTENT.footer}</span><span>1080 × 1920 <i>·</i> 9:16</span></footer>
+            <footer><span>{CONTENT.footer}</span><span>{project.width} × {project.height} <i>·</i> {project.aspectRatio}</span></footer>
           </div>
         </section>
         <div className="preview-caption"><span><i className="caption-dot" />LIVE PREVIEW</span><span>DRAG PLAYHEAD TO SCRUB</span></div>
@@ -342,12 +425,12 @@ function App() {
 
       <aside className="inspector">
         <div className="panel-heading"><span>PROJECT</span><button className="inspector-action" aria-label="Project options">•••</button></div>
-        <div className="inspector-block"><label>PROJECT NAME</label><div className="inspector-value">Untitled Project <span>✎</span></div></div>
-        <div className="inspector-block"><label>FRAME SIZE</label><div className="inspector-value">1080 × 1920 <span className="value-badge">9:16</span></div></div>
-        <div className="inspector-block"><label>FRAME RATE</label><div className="inspector-value">30 fps <span className="inspector-chevron">⌄</span></div></div>
+        <div className="inspector-block"><label>PROJECT NAME</label><div className="inspector-value">{project.name} <span>✎</span></div></div>
+        <div className="inspector-block"><label>FRAME SIZE</label><div className="inspector-value">{project.width} × {project.height} <span className="value-badge">{project.aspectRatio}</span></div></div>
+        <div className="inspector-block"><label>FRAME RATE</label><div className="inspector-value">{project.fps} fps <span className="inspector-chevron">⌄</span></div></div>
         <div className="panel-divider" />
         <div className="panel-heading"><span>RENDER</span><span className="ready-badge">READY</span></div>
-        <div className="render-card"><div className="render-icon">↗</div><strong>Browser preview</strong><small>Capture the composition in Chromium.</small><div className="render-spec">H.264 <span>·</span> 1080 × 1920 <span>·</span> 30 fps</div></div>
+        <div className="render-card"><div className="render-icon">↗</div><strong>Browser preview</strong><small>Capture the composition in Chromium.</small><div className="render-spec">H.264 <span>·</span> {project.width} × {project.height} <span>·</span> {project.fps} fps</div></div>
         <button className="render-button" onClick={() => window.open('https://playwright.dev/docs/videos', '_blank', 'noopener,noreferrer')}>EXPORT WORKFLOW <span>↗</span></button>
         <p className="export-note">Automated video export requires a browser-capture workflow. This preview does not encode video by itself.</p>
       </aside>
@@ -365,7 +448,10 @@ function App() {
       <div className={`timeline-track ${hasTimeline ? 'has-timeline' : ''}`}>
         <div className="track-label">MASTER</div>
         <div className="track-content">
-          <div className="clip-row">{CLIPS.map((clip, index) => <div className={`timeline-clip clip-${index + 1}`} key={clip.label} style={{ width: `${clip.width}%` }}>{clip.label}</div>)}</div>
+          <div className="clip-row">{CLIPS.map((clip, index) => {
+            const scene = scenes[clip.key];
+            return <div className={`timeline-clip clip-${index + 1}`} key={clip.key} style={{ width: `${clip.width}%` }}>{scene.index} &nbsp; {scene.label}</div>;
+          })}</div>
           <div className="playhead" style={{ left: playhead }} />
           <input
             className="scrubber"

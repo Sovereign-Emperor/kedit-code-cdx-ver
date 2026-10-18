@@ -11,15 +11,24 @@ npm run dev
 
 Open the local Vite URL and use the animation timeline to play, pause, reset, or scrub through the preview.
 
-## Make another edit
+## Customize and reuse the template
 
-Edit the `CONTENT` object near the top of `src/main.jsx`:
+For a new video, edit the commented `CONTENT` object near the top of `src/main.jsx`. It is the edit pack: update the story and style there, and leave the reusable React components, GSAP timeline, and CSS engine alone.
 
-- `title`, `subtitle`, and `eyebrow`
-- `code`, `keyword`, and `final`
-- `metric`, `graph`, `accent`, and footer/brand text
+- **`project`** — project name, output width/height, aspect-ratio label, frame rate, and target timeline length. When changing frame dimensions, update `aspectRatio` too.
+- **`theme`** — accent color, dark background, and display font. The accent is reused across the scene highlights and transition details.
+- **`effects`** — which glow, grain, and camera effects start enabled. They can still be toggled in the studio.
+- **`brand` / `footer`** — recurring brand and composition footer.
+- **`scenes.intro`** — hook, title, supporting line, and scene label.
+- **`scenes.code`** — code lines, filename, headline, stamp, and supporting caption.
+- **`scenes.impact`** — the big single-word moment and supporting copy.
+- **`scenes.data`** — metric label/start/end/prefix, graph, chart labels, and takeaway. Graph values are percentages from 0 to 100.
+- **`scenes.outro`** — final headline, background word, supporting line, and call to action.
+- **`motion`** — transition/type/counter/chart timings, camera scale, and flash strength. `project.duration` is the total timeline target; increase it if slower animation exceeds that length.
 
-The animation sequence and composition are reusable; ordinary content changes do not require changes to the engine.
+Use `\n` in the multi-line `kicker`, `headline`, `bottom`, `sideNote`, or data headline fields to control line breaks. Keep scene titles concise for legibility on a phone.
+
+The five scene components share the same visual system and animation engine, so content, theme, and pacing can be remixed from one edit pack to the next without rebuilding the scenes.
 
 ## Motion-design controls
 
@@ -27,13 +36,13 @@ The animation sequence and composition are reusable; ordinary content changes do
 - **Scene design:** Five distinct, full-frame portrait scenes replace the stacked dashboard-like layout: a cinematic title, kinetic code card, oversized impact typography, an animated growth chart, and a typographic closing card.
 - **Typography:** Headline and closing text reveal letter-by-letter. Scene transitions include a clipped code-editor wipe, blur/scale focus transitions, a restrained flash impact, and directional push-ins.
 - **Effects:** Toggle glow, film grain, and camera movement from the Effects panel.
-- **Composition:** Preview the design at a 9:16 aspect ratio for portrait social video.
+- **Composition:** Preview the design at the configured aspect ratio and output dimensions.
 
 This is a template-based motion-graphics preview, not a full nonlinear editor. It does not provide After Effects project files, arbitrary layer/keyframe editing, masks, tracking, audio editing, third-party effect plugins, or native video encoding.
 
 ## Export
 
-The composition is designed for a 1080 × 1920 / 9:16 output. The browser preview does not encode a video file. For a quick capture, record the composition in Chromium at the target viewport size. For automated rendering, use browser automation to capture the composition and encode the frames using a video-rendering workflow such as Playwright plus FFmpeg.
+The default composition is 1080 × 1920 / 9:16. The browser preview does not encode a video file. For a quick capture, record the composition in Chromium at the configured target viewport size. For automated rendering, use browser automation to capture the composition and encode the frames using a video-rendering workflow such as Playwright plus FFmpeg.
 
 ## Architecture
 
