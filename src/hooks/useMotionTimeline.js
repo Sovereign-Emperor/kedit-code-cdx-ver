@@ -28,7 +28,10 @@ export function useMotionTimeline(content, transitionStyle, transitionOptions = 
     timeline.current?.kill();
     timeline.current = null;
     if (root.current) {
-      gsap.set(root.current.querySelectorAll('[data-anim], .intro-words .kinetic-letter, .intro-kicker, .intro-subtitle, .editor, .code-line, .impact-words .kinetic-letter, .metric-value, .data-kicker, .data-caption, .graph-bar, .outro-words .kinetic-letter, .outro-subtitle, .motion-rule, .orbit'), { clearProps: 'all' });
+      gsap.set(root.current.querySelectorAll('[data-anim], .intro-words .kinetic-letter, .intro-kicker, .intro-subtitle, .editor, .code-line, .impact-words .kinetic-letter, .metric-value, .data-kicker, .data-caption, .outro-words .kinetic-letter, .outro-subtitle, .motion-rule, .orbit'), { clearProps: 'all' });
+      // Graph bar heights are content data in inline styles. Clear only the
+      // animated transform so reset doesn't erase the values that draw bars.
+      gsap.set(root.current.querySelectorAll('.graph-bar'), { clearProps: 'transform' });
       gsap.set(root.current.querySelectorAll('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, rotation: 0, skewX: 0, filter: 'blur(0px)', clipPath: 'inset(0 0 0 0)' });
       gsap.set(root.current.querySelector('.scene-intro'), { autoAlpha: 1 });
       gsap.set(root.current.querySelector('.flash'), { opacity: 0 });

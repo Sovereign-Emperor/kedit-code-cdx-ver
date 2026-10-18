@@ -148,9 +148,9 @@ button { font: inherit; }
 .reset-button { font-size: 14px; }
 .time-readout { min-width: 83px; margin-left: 5px; color: #c9c5d0; font: 8px 'DM Mono', monospace; text-align: right; }
 .time-readout i { color: #696570; font-style: normal; }
-.timeline-track { display: grid; grid-template-columns: 65px 1fr; gap: 8px; align-items: center; }
+.timeline-track { display: grid; grid-template-columns: 65px minmax(0, 1fr); gap: 8px; align-items: center; }
 .track-label { color: #6f6b76; font: 7px 'DM Mono', monospace; letter-spacing: .06em; }
-.track-content { position: relative; height: 31px; }
+.track-content { position: relative; min-width: 0; height: 31px; }
 .clip-row { display: flex; gap: 3px; height: 25px; overflow: hidden; }
 .timeline-clip { min-width: 0; display: flex; align-items: center; padding: 0 6px; overflow: hidden; border: 1px solid #3a3329; border-radius: 3px; background: linear-gradient(90deg, #3c301b, #28221a); color: #d5b86a; font: 6px 'DM Mono', monospace; white-space: nowrap; }
 .clip-2 { border-color: #383041; background: linear-gradient(90deg, #352d40, #25212d); color: #c2a7db; }
@@ -182,13 +182,15 @@ button { font: inherit; }
   .studio-header { height: 46px; flex-basis: 46px; padding: 0 12px; }
   .project-name { font-size: 7px; }
   .header-version { display: none; }
-  .workspace { display: block; padding: 12px 12px 8px; }
-  .side-panel, .inspector { display: none; }
+  .workspace { display: flex; flex-direction: column; padding: 12px 12px 8px; }
+  .side-panel { display: block; order: 2; max-height: none; overflow: visible; margin-top: 12px; }
+  .inspector { display: none; }
+  .preview-column { order: 1; }
   .preview-column { width: 100%; }
   .stage { width: min(100%, 360px); }
   .preview-toolbar, .preview-caption { width: min(100%, 360px); }
   .timeline-panel { margin: 0 10px; padding: 9px 9px 7px; }
-  .timeline-track { grid-template-columns: 48px 1fr; gap: 5px; }
+  .timeline-track { grid-template-columns: 48px minmax(0, 1fr); gap: 5px; }
   .timeline-bottom { padding-left: 53px; font-size: 5px; }
   .studio-footer { padding: 0 12px; font-size: 6px; }
   .studio-footer > span:nth-child(2) { display: none; }
