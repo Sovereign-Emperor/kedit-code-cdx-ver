@@ -9,14 +9,14 @@ export function KineticWords({ text, className = '' }) {
   </span>;
 }
 
-function LineBreaks({ text, accentLine = -1, className = '' }) {
+export function LineBreaks({ text, accentLine = -1, className = '' }) {
   return <span className={className}>{text.split('\n').map((line, index) => <React.Fragment key={`${index}-${line}`}>
     {index > 0 && <br />}
     {index === accentLine ? <em>{line}</em> : line}
   </React.Fragment>)}</span>;
 }
 
-function highlightCode(line) {
+export function highlightCode(line) {
   const escaped = line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   return <span dangerouslySetInnerHTML={{ __html: escaped
     .replace(/\b(const|let|var|if|else|return)\b/g, '<i>$1</i>')
@@ -24,11 +24,11 @@ function highlightCode(line) {
     .replace(/(\d+)/g, '<em>$1</em>') }} />;
 }
 
-function CodeLine({ children, index }) {
+export function CodeLine({ children, index }) {
   return <div className="code-line" data-anim><span className="line-no">{String(index + 1).padStart(2, '0')}</span><span>{children}</span></div>;
 }
 
-function Graph({ values }) {
+export function Graph({ values }) {
   return <div className="graph" aria-label="animated growth graph">
     {values.map((value, index) => <div className="graph-col" key={index}>
       <div className="graph-bar" style={{ height: `${value}%` }} />
@@ -37,7 +37,7 @@ function Graph({ values }) {
   </div>;
 }
 
-function MetricValue({ metric }) {
+export function MetricValue({ metric }) {
   const value = useRef(null);
   useLayoutEffect(() => {
     if (value.current) value.current.textContent = `${metric.prefix}${metric.from.toLocaleString()}`;
@@ -45,8 +45,9 @@ function MetricValue({ metric }) {
   return <div className="metric-value" ref={value} />;
 }
 
-// Each scene is an independent component; the pack supplies its content.
-function IntroScene({ scene }) {
+// Each scene is an independent component. Keep its class names aligned with
+// useMotionTimeline selectors; this is how choreography targets scene layers.
+export function IntroScene({ scene }) {
   return <section className="motion-scene scene-intro">
     <div className="intro-side-note">{scene.eyebrow}</div>
     <div className="intro-orb" />
@@ -60,7 +61,7 @@ function IntroScene({ scene }) {
   </section>;
 }
 
-function CodeScene({ scene }) {
+export function CodeScene({ scene }) {
   return <section className="motion-scene scene-code">
     <div className="scene-meta"><span>{scene.index} / {scene.label}</span><span>{scene.inputLabel}</span></div>
     <div className="code-headline"><LineBreaks text={scene.headline} accentLine={1} /></div>
@@ -73,7 +74,7 @@ function CodeScene({ scene }) {
   </section>;
 }
 
-function ImpactScene({ scene }) {
+export function ImpactScene({ scene }) {
   return <section className="motion-scene scene-impact">
     <div className="impact-top"><span>{scene.eyebrow}</span><span>{scene.index} / {scene.label}</span></div>
     <div className="impact-orbit orbit" />
@@ -87,7 +88,7 @@ function ImpactScene({ scene }) {
   </section>;
 }
 
-function DataScene({ scene }) {
+export function DataScene({ scene }) {
   return <section className="motion-scene scene-data">
     <div className="data-topline"><span>{scene.index} / {scene.label}</span><span>{scene.sideLabel}</span></div>
     <div className="data-title"><LineBreaks text={scene.headline} accentLine={1} /></div>
@@ -101,7 +102,7 @@ function DataScene({ scene }) {
   </section>;
 }
 
-function OutroScene({ scene }) {
+export function OutroScene({ scene }) {
   return <section className="motion-scene scene-outro">
     <div className="outro-backdrop">{scene.backdrop}</div>
     <div className="outro-index">{scene.index} / {scene.label}</div>
@@ -141,6 +142,7 @@ export function MotionScenes({ content, status, stageRef, effectClass }) {
         <div><span className="brand-dot pulse-dot" />{content.brand}</div>
         <div className="status">{status}<span className="status-dot" /></div>
       </header>
+      {/* Scene order and selector classes form the contract with the GSAP timeline. */}
       <div className="scene-stage">
         <IntroScene scene={scenes.intro} />
         <CodeScene scene={scenes.code} />

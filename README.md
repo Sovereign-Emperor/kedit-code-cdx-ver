@@ -1,6 +1,6 @@
 # KEDIT-CODE Motion Engine
 
-A reusable, code-driven motion-graphics studio for Sovereign Emperor short-form content. React renders a 9:16 composition, GSAP drives a replayable sequence, CSS defines the visual system, and the `CONTENT` object supplies the story.
+A reusable, code-driven motion-graphics studio for Sovereign Emperor short-form content. React renders a 9:16 composition, GSAP drives a replayable sequence, CSS defines the visual system, and `BASE_CONTENT` supplies the default story.
 
 ## Run locally
 
@@ -26,13 +26,13 @@ Choose a preset from **Scene Packs** in the studio to instantly swap the complet
 - **Creative Craft** — curiosity, iteration, and finishing the work.
 - **Resilient by Design** — adapting to setbacks while keeping the purpose.
 
-Every preset reuses the same five scene layouts and animation engine. To add one, add an entry to `SCENE_PACKS` in `src/main.jsx`; `createScenePack` fills unspecified fields from the base content, so a preset only needs to override the parts it changes.
+Every preset reuses the same five scene layouts and animation engine. Pack data lives in `src/scenePacks.js`, separate from the React app. `createScenePack` fills unspecified fields from the base edit pack, so a preset only needs to override the parts it changes.
 
-For a fully custom edit, change the commented base `CONTENT` edit pack near the top of `src/main.jsx`. Leave the reusable React components, GSAP timeline, and CSS engine alone.
+For a fully custom edit, change the commented `BASE_CONTENT` edit pack near the top of `src/scenePacks.js`. Leave the reusable React components, GSAP timeline, and CSS engine alone.
 
 - **`project`** — project name, output width/height, aspect-ratio label, frame rate, and target timeline length. When changing frame dimensions, update `aspectRatio` too.
 - **`theme`** — accent color, dark background, and display font. The accent is reused across the scene highlights and transition details.
-- **`effects`** — which glow, grain, and camera effects start enabled. They can still be toggled in the studio.
+- **`effects`** — which available effects start enabled. They can still be toggled in the studio.
 - **`brand` / `footer`** — recurring brand and composition footer.
 - **`scenes.intro`** — hook, title, supporting line, and scene label.
 - **`scenes.code`** — code lines, filename, headline, stamp, and supporting caption.
@@ -44,6 +44,34 @@ For a fully custom edit, change the commented base `CONTENT` edit pack near the 
 Use `\n` in the multi-line `kicker`, `headline`, `bottom`, `sideNote`, or data headline fields to control line breaks. Keep scene titles concise for legibility on a phone.
 
 The five scene components share the same visual system and animation engine, so the built-in presets and custom edits can be remixed without rebuilding the scenes. To change the shared visual structure, edit the matching component in `src/components/MotionScenes.jsx`; to change studio panels or timeline controls, use `src/components/StudioControls.jsx`.
+
+### Create a custom scene pack
+
+Import and call `createScenePack` in `src/scenePacks.js`. The example below overrides only the fields that differ; missing scene fields inherit from `BASE_CONTENT`:
+
+```js
+createScenePack({
+  id: 'my-pack',
+  name: 'My Pack',
+  description: 'A short pack description',
+  accent: '#77c9b8',
+  effects: { glow: false, grain: true },
+  motion: { transition: 0.5, typeDuration: 0.7 },
+  scenes: {
+    intro: { title: 'A NEW STORY', subtitle: 'Your opening promise.' },
+    impact: { word: 'CREATE' },
+    data: { metric: { label: 'PROJECTS', from: 0, to: 24 } }
+  }
+})
+```
+
+`project`, `theme`, `effects`, `motion`, `brand`, and `footer` may also be overridden. Scene objects are merged; nested metrics are merged too, while arrays such as `code`, `graph`, and `captions` are replaced by the pack's values. Add the resulting pack to `SCENE_PACKS` to make it selectable.
+
+### Customize effects and transitions
+
+- Effect selector metadata is in `EFFECTS` in `src/motionPresets.js`; default effect values are in `BASE_CONTENT.effects`. For a new effect, define the CSS class/layer in `src/styles.css` and `MotionScenes.jsx`, then add the same key to the effect options and default pack values.
+- Transition selectors and GSAP enter/settle/exit states are together in `TRANSITION_STYLES` in `src/motionPresets.js`. Each treatment needs an `id`, display `label`/`detail`, and GSAP property objects for `enter`, `settle`, and `exit`. Motion duration for scene exits comes from `motion.transition` unless the preset supplies an explicit exit duration.
+- Scene timing and motion values remain in each pack's `motion` object. Keep the total `project.duration` long enough for the timeline to finish naturally.
 
 ## Motion-design controls
 
@@ -63,16 +91,37 @@ The default composition is 1080 × 1920 / 9:16. The browser preview does not enc
 
 ```text
 src/
-├── main.jsx                    # Edit-pack data, preset library, app state, GSAP timeline
+├── main.jsx                    # Small browser mount point
+├── scenePacks.js               # Base edit pack, pack factory, presets, clip proportions
+├── motionPresets.js            # Reusable effect metadata and transition choreography
+├── hooks/
+│   └── useMotionTimeline.js    # GSAP timeline state, playback, scrubbing, and cleanup
 ├── components/
-│   ├── MotionScenes.jsx         # Reusable intro, code, impact, data, and outro scenes
-│   └── StudioControls.jsx       # Reusable preset, effects, transitions, and timeline controls
+│   ├── MotionStudio.jsx        # Reusable editor composition and injectable options
+│   ├── MotionScenes.jsx        # Reusable intro, code, impact, data, and outro scenes
+│   ├── StudioChrome.jsx        # Reusable header, sidebar, preview, inspector, and footer
+│   └── StudioControls.jsx      # Reusable preset, effect, transition, and timeline controls
 └── styles.css                  # Shared composition and studio styling
 ```
 
-`main.jsx` owns the content and animation engine. `MotionScenes.jsx` maps each pack's scene data to reusable visual components. `StudioControls.jsx` contains data-driven controls; the parent owns their state and connects actions to playback or pack changes. Add a new pack by extending `SCENE_PACKS`, or add a new visual scene by updating the scene components and the associated timeline in `useTimeline`.
+`MotionStudio` is exported independently so another React app can embed it and pass custom packs, clip widths, effects, transition styles, or a starting transition. It composes the layout and controls; `useMotionTimeline` owns playback and GSAP cleanup; `MotionScenes` owns the visual scene markup. The small `main.jsx` file only mounts the editor in the Vite page.
 
-High-level customization notes are kept next to the edit-pack configuration and component responsibilities. Keep scene selectors and GSAP targets in sync when changing scene markup, since the timeline animates those elements by class.
+```jsx
+import { MotionStudio } from './components/MotionStudio.jsx';
+import { SCENE_PACKS, TIMELINE_CLIPS } from './scenePacks.js';
+import { EFFECTS, TRANSITION_STYLES } from './motionPresets.js';
+
+<MotionStudio
+  packs={SCENE_PACKS}
+  clips={TIMELINE_CLIPS}
+  effectOptions={EFFECTS}
+  transitionOptions={TRANSITION_STYLES}
+  initialTransition="whip"
+  engineVersion="02.0"
+/>
+```
+
+High-level customization notes are kept next to the edit-pack configuration, public component props, and animation contracts. Keep scene selectors and GSAP targets in sync when changing scene markup, since the timeline animates those elements by class.
 
 ```text
 CONTENT
