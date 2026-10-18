@@ -13,7 +13,19 @@ Open the local Vite URL and use the animation timeline to play, pause, reset, or
 
 ## Customize and reuse the template
 
-For a new video, edit the commented `CONTENT` object near the top of `src/main.jsx`. It is the edit pack: update the story and style there, and leave the reusable React components, GSAP timeline, and CSS engine alone.
+Choose a preset from **Scene Packs** in the studio to instantly swap the complete story and accent color. The library includes:
+
+- **Compound** — wealth, assets, and long-term growth.
+- **Founder Mode** — product-building, customers, and traction.
+- **Creator Economy** — content, audience, and community trust.
+- **Deep Focus** — attention, focus blocks, and meaningful work.
+- **Fitness Mindset** — training, habits, and consistency.
+- **Future Systems** — emerging technology and human-centered ideas.
+- **Mindset Shift** — perspective, personal growth, and new choices.
+
+Every preset reuses the same five scene layouts and animation engine. To add one, add an entry to `SCENE_PACKS` in `src/main.jsx`; `createScenePack` fills unspecified fields from the base content, so a preset only needs to override the parts it changes.
+
+For a fully custom edit, change the commented base `CONTENT` edit pack near the top of `src/main.jsx`. Leave the reusable React components, GSAP timeline, and CSS engine alone.
 
 - **`project`** — project name, output width/height, aspect-ratio label, frame rate, and target timeline length. When changing frame dimensions, update `aspectRatio` too.
 - **`theme`** — accent color, dark background, and display font. The accent is reused across the scene highlights and transition details.
@@ -28,7 +40,7 @@ For a new video, edit the commented `CONTENT` object near the top of `src/main.j
 
 Use `\n` in the multi-line `kicker`, `headline`, `bottom`, `sideNote`, or data headline fields to control line breaks. Keep scene titles concise for legibility on a phone.
 
-The five scene components share the same visual system and animation engine, so content, theme, and pacing can be remixed from one edit pack to the next without rebuilding the scenes.
+The five scene components share the same visual system and animation engine, so the built-in presets and custom edits can be remixed without rebuilding the scenes.
 
 ## Motion-design controls
 
