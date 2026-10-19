@@ -146,7 +146,7 @@ export function TimelinePanel({
         return <div className={`scene-track ${track.enabled ? '' : 'is-muted'}`} key={track.key}>
           <div className="scene-track-controls">
             <span className="track-scene-index">{String(index + 1).padStart(2, '0')}</span>
-            <button className="track-enable" type="button" aria-pressed={track.enabled} aria-label={`${track.enabled ? 'Mute' : 'Enable'} ${track.label} track`} onClick={() => onTrackToggle(track.key)}>{track.enabled ? '●' : '○'}</button>
+            <button className="track-enable" type="button" aria-pressed={!track.enabled} aria-label={`${track.enabled ? 'Mute' : 'Enable'} ${track.label} track`} onClick={() => onTrackToggle(track.key)}>{track.enabled ? '●' : '○'}</button>
             <strong>{track.label}</strong>
             <span className="track-reorder">
               <button type="button" aria-label={`Move ${track.label} track up`} disabled={index === 0} onClick={() => onTrackMove(track.key, -1)}>↑</button>
@@ -154,8 +154,8 @@ export function TimelinePanel({
             </span>
           </div>
           <div className="scene-track-lane" aria-label={`${track.label} starts at ${left.toFixed(0)}% and lasts ${track.duration.toFixed(1)} seconds`}>
-            <div className={`timeline-clip clip-${index + 1}`} style={{ left: `${left}%`, width: `${width}%` }}>
-              {track.label}<small>{track.duration.toFixed(1)}s</small>
+            <div className={`timeline-clip clip-${index + 1}`} style={{ left: `${left}%`, width: `${width}%` }} aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
             </div>
             <div className="playhead" style={{ left: `${progress * 100}%` }} />
           </div>

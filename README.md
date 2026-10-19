@@ -92,6 +92,12 @@ createScenePack({
 - **Composition:** Preview the design at the configured aspect ratio and output dimensions.
 - **Scene carousel:** Choose **Carousel** or **3D Scenes** under Edits to make it the composition output. Both formats use the selected scene pack and support arrow, pagination, and keyboard navigation.
 - **CSS 3D scene accent:** The intro uses a layered, theme-colored 3D orb that can be reused in other scenes and respects reduced-motion preferences. This adds lightweight CSS perspective; it is not a WebGL renderer.
+
+### Workspace layout
+
+The composition preview and multi-track timeline remain in the main workspace. Open **Tools** to reveal the contextual side drawer, then choose **Edits**, **Scene Packs**, **Effects**, **Transitions**, or **Project** from its icon rail. Escape, the close button, or the backdrop dismisses the drawer. On narrow screens the same drawer becomes a full-height overlay, leaving the composition and timeline as the primary page content.
+
+The drawer uses the reusable `StudioToolDrawer` in `src/components/StudioChrome.jsx`; its section navigation is data-driven. Add or reorder tool groups through `TOOL_SECTIONS`, then render the corresponding panel from `MotionStudio`. Workspace and narrow-screen layout rules are grouped in the responsive section at the end of `src/styles.css`.
 - **Typography components:** `EditorialTypography` provides configurable animated display headlines for carousel cards; `KineticWords` and `LineBreaks` are reusable building blocks for scene and brand typography.
 
 ### Reuse the carousel and typography

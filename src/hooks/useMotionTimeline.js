@@ -195,6 +195,7 @@ export function useMotionTimeline(
   };
 
   const seek = value => {
+    if (!timeline.current) run();
     if (!timeline.current) return;
     timeline.current.pause();
     timeline.current.progress(value);
@@ -203,5 +204,5 @@ export function useMotionTimeline(
   };
 
   useLayoutEffect(() => () => timeline.current?.kill(), []);
-  return { root, run, reset, togglePlayback, seek, playing, progress, duration, status, hasTimeline: Boolean(timeline.current) };
+  return { root, run, reset, togglePlayback, seek, playing, progress, duration, status, hasTimeline: true };
 }

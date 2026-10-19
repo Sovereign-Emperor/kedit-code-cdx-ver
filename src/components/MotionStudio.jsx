@@ -2,7 +2,7 @@ import { useLayoutEffect, useState } from 'react';
 import { MotionScenes } from './MotionScenes.jsx';
 import { SceneCarousel } from './SceneCarousel.jsx';
 import { EditFormatSelector, EffectControls, ScenePackSelector, TimelinePanel, TransitionList } from './StudioControls.jsx';
-import { PreviewColumn, ProjectInspector, StudioFooter, StudioHeader, StudioSidebar } from './StudioChrome.jsx';
+import { PreviewColumn, ProjectInspector, StudioFooter, StudioHeader, StudioToolDrawer } from './StudioChrome.jsx';
 import { SCENE_PACKS, TIMELINE_CLIPS } from '../scenePacks.js';
 import { createCarouselSlides } from '../carouselContent.js';
 import { createEditTracks, moveEditTrack } from '../editTimeline.js';
@@ -29,6 +29,8 @@ export function MotionStudio({
   const selectedPack = packs.find(pack => pack.id === selectedPackId) || packs[0];
   const content = selectedPack.content;
   const [editFormat, setEditFormat] = useState('motion');
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [activeToolSection, setActiveToolSection] = useState('edits');
   const [transitionStyle, setTransitionStyle] = useState(initialTransition);
   const createTracksFor = packContent => createEditTracks(
     clips.map(clip => ({ ...clip, ...packContent.scenes[clip.key] })),
@@ -94,28 +96,42 @@ export function MotionStudio({
     setMotionSettings(current => ({ ...current, [key]: value }));
   };
 
+  const selectToolSection = section => {
+    setActiveToolSection(section);
+    setToolsOpen(true);
+  };
+
+  const handleToolClose = () => setToolsOpen(false);
+
   useLayoutEffect(() => {
     if (editFormat === 'motion') reset();
   }, [editFormat, tracks]);
 
   return <main className="studio" style={{ '--accent': content.theme.accent }}>
-    <StudioHeader project={project} engineVersion={engineVersion} />
+    <StudioHeader
+      project={project}
+      engineVersion={engineVersion}
+      toolsOpen={toolsOpen}
+      onToolsToggle={() => setToolsOpen(open => !open)}
+    />
     <div className="workspace">
-      <StudioSidebar project={project}>
-        <EditFormatSelector value={editFormat} onChange={selectEditFormat} />
-        <ScenePackSelector packs={packs} selectedId={selectedPack.id} onSelect={selectPack} />
-        <EffectControls value={effects} onChange={toggleEffect} effects={effectOptions} />
-        <TransitionList motion={content.motion} value={transitionStyle} onChange={selectTransitionStyle} styles={transitionOptions} />
-      </StudioSidebar>
       <PreviewColumn>
         {editFormat === 'motion'
           ? <MotionScenes content={content} status={status} stageRef={root} effectClass={effectClass} />
           : <SceneCarousel slides={carouselSlides} content={content} mode={editFormat} />}
       </PreviewColumn>
-      <ProjectInspector
-        project={project}
-        onExport={() => window.open('https://playwright.dev/docs/videos', '_blank', 'noopener,noreferrer')}
-      />
+      <StudioToolDrawer
+        open={toolsOpen}
+        activeSection={activeToolSection}
+        onSelectSection={selectToolSection}
+        onClose={handleToolClose}
+      >
+        {activeToolSection === 'edits' && <EditFormatSelector value={editFormat} onChange={selectEditFormat} />}
+        {activeToolSection === 'packs' && <ScenePackSelector packs={packs} selectedId={selectedPack.id} onSelect={selectPack} />}
+        {activeToolSection === 'effects' && <EffectControls value={effects} onChange={toggleEffect} effects={effectOptions} />}
+        {activeToolSection === 'transitions' && <TransitionList motion={motionSettings} value={transitionStyle} onChange={selectTransitionStyle} styles={transitionOptions} />}
+        {activeToolSection === 'project' && <ProjectInspector project={project} onExport={() => window.open('https://playwright.dev/docs/videos', '_blank', 'noopener,noreferrer')} />}
+      </StudioToolDrawer>
     </div>
     <TimelinePanel
       tracks={tracks}
