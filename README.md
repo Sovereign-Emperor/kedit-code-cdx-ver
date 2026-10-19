@@ -32,6 +32,10 @@ The library includes ten reusable scene packs:
 - **Creative Craft** — curiosity, iteration, and finishing the work.
 - **Resilient by Design** — adapting to setbacks while keeping the purpose.
 
+In **Motion Edit**, use the multi-track timeline to reorder scene tracks, mute a scene, or adjust an individual clip's duration. The expanded **Keyframe Controls** panel tunes the type-reveal timing, impact flash, and camera-push endpoint used by the GSAP choreography. These changes rebuild the actual animation; they are not timeline-only decorations. Muted tracks reserve their duration as an empty interval, so later clips stay aligned with the ruler.
+
+This is an editor foundation, not yet a general nonlinear editor: scene tracks play sequentially rather than compositing arbitrary overlapping video/audio layers, and keyframe controls edit a few reusable motion endpoints instead of arbitrary per-property keyframes or Bézier curves.
+
 Each format reuses the same selected pack content. The carousel formats adapt the five scenes into cards through `createCarouselSlides`; they are edit formats inside the composition workflow, not a separate showcase. Pack data lives in `src/scenePacks.js`, separate from the React app. `createScenePack` fills unspecified fields from the base edit pack, so a preset only needs to override the parts it changes.
 
 For a fully custom edit, change the commented `BASE_CONTENT` edit pack near the top of `src/scenePacks.js`. Leave the reusable React components, GSAP timeline, and CSS engine alone.
@@ -81,7 +85,7 @@ createScenePack({
 
 ## Motion-design controls
 
-- **Timeline:** Play, pause, restart, and scrub the GSAP animation.
+- **Timeline:** Play, pause, restart, and scrub the GSAP animation; reorder, mute, and resize individual scene tracks.
 - **Scene design:** Five distinct, full-frame portrait scenes replace the stacked dashboard-like layout: a cinematic title, kinetic code card, oversized impact typography, an animated growth chart, and a typographic closing card.
 - **Typography:** Headline and closing text reveal letter-by-letter. Choose cinematic blur, whip pan, signal glitch, or film wipe treatments from the Transitions panel.
 - **Effects:** Toggle bloom/glow, film grain, camera punch, lens vignette, chromatic split, light leak, and scanlines independently.
@@ -129,6 +133,7 @@ src/
 ├── scenePacks.js               # Base edit pack, pack factory, presets, clip proportions
 ├── motionPresets.js            # Reusable effect metadata and transition choreography
 ├── carouselContent.js          # Adapts selected scene-pack content to carousel slides
+├── editTimeline.js             # Editable timeline track creation and ordering helpers
 ├── hooks/
 │   └── useMotionTimeline.js    # GSAP timeline state, playback, scrubbing, and cleanup
 ├── components/

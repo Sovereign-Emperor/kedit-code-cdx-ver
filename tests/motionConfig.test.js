@@ -3,6 +3,7 @@ import test from 'node:test';
 import { BASE_CONTENT, createScenePack, SCENE_PACKS, TIMELINE_CLIPS } from '../src/scenePacks.js';
 import { EFFECTS, getTransitionStyle, TRANSITION_STYLES } from '../src/motionPresets.js';
 import { createCarouselSlides } from '../src/carouselContent.js';
+import { createEditTracks, getEditDuration, moveEditTrack } from '../src/editTimeline.js';
 
 test('all scene packs satisfy the five-scene content contract', () => {
   assert.equal(SCENE_PACKS.length, 10);
@@ -74,6 +75,27 @@ test('timeline clips cover each scene exactly once and fill the full edit', () =
   assert.deepEqual(TIMELINE_CLIPS.map(clip => clip.key), sceneNames);
   assert.equal(TIMELINE_CLIPS.reduce((total, clip) => total + clip.width, 0), 100);
   assert.ok(TIMELINE_CLIPS.every(clip => clip.width > 0));
+});
+
+test('editable scene tracks preserve timing, duration edits, and reorder operations', () => {
+  const tracks = createEditTracks(TIMELINE_CLIPS, 13);
+  assert.equal(getEditDuration(tracks), 13);
+  assert.deepEqual(tracks.map(track => track.key), Object.keys(BASE_CONTENT.scenes));
+
+  const moved = moveEditTrack(tracks, 'impact', -1);
+  assert.deepEqual(moved.map(track => track.key), ['intro', 'impact', 'code', 'data', 'outro']);
+  assert.deepEqual(tracks.map(track => track.key), Object.keys(BASE_CONTENT.scenes));
+  assert.equal(moveEditTrack(moved, 'intro', -1), moved);
+
+  const resized = moved.map(track => track.key === 'impact' ? { ...track, duration: 4 } : track);
+  const newDuration = 13 - moved.find(track => track.key === 'impact').duration + 4;
+  assert.equal(getEditDuration(resized), Number(newDuration.toFixed(2)));
+  assert.equal(
+    getEditDuration(resized.filter(track => track.key !== 'outro')),
+    Number((newDuration - moved.find(track => track.key === 'outro').duration).toFixed(2))
+  );
+  assert.throws(() => createEditTracks([{ key: 'intro', width: 50 }, { key: 'intro', width: 50 }]), /unique/);
+  assert.throws(() => createEditTracks([{ key: 'intro', width: 0 }]), /positive width/);
 });
 
 test('carousel content reuses every selected-pack scene and theme', () => {

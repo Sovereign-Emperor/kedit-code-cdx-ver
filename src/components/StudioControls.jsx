@@ -105,37 +105,104 @@ export function TransitionList({ motion, value, onChange, styles = TRANSITION_ST
 }
 
 // Transport and scrub controls are shared by every selected scene pack.
-export function TimelinePanel({ clips, packName, progress, duration, playing, hasTimeline, transportEnabled = true, onPlayPause, onReset, onSeek }) {
+export function TimelinePanel({
+  tracks,
+  packName,
+  progress,
+  duration,
+  playing,
+  hasTimeline,
+  transportEnabled = true,
+  motionSettings,
+  onPlayPause,
+  onReset,
+  onSeek,
+  onTrackMove,
+  onTrackDuration,
+  onTrackToggle,
+  onMotionSetting
+}) {
   const elapsed = progress === 1 ? Math.ceil(duration) : Math.floor(progress * duration);
   const formatTime = (seconds) => `00:${String(seconds).padStart(2, '0')}`;
+  const totalTrackDuration = tracks.reduce((total, track) => total + track.duration, 0);
+  let trackOffset = 0;
 
   return <section className="timeline-panel" aria-label="Animation timeline">
     <div className="timeline-top">
-      <div className="timeline-title"><span className="timeline-icon">◷</span><strong>ANIMATION TIMELINE</strong><span className="timeline-duration">{formatTime(Math.ceil(duration))}</span></div>
+      <div className="timeline-title"><span className="timeline-icon">◷</span><strong>MULTI-TRACK EDIT</strong><span className="timeline-duration">{formatTime(Math.ceil(duration))}</span></div>
       <div className="timeline-actions">
         <button className="transport-button" onClick={onPlayPause} disabled={!transportEnabled} aria-label={playing ? 'Pause animation' : 'Play animation'}>{playing ? 'Ⅱ' : '▶'}</button>
         <button className="transport-button reset-button" onClick={onReset} disabled={!transportEnabled} aria-label="Reset animation">↺</button>
         <span className="time-readout">{formatTime(elapsed)} <i>/</i> {formatTime(Math.ceil(duration))}</span>
       </div>
     </div>
-    <div className={`timeline-track ${hasTimeline ? 'has-timeline' : ''}`}>
-      <div className="track-label">MASTER</div>
-      <div className="track-content">
-        <div className="clip-row">{clips.map((clip, index) => <div className={`timeline-clip clip-${index + 1}`} key={clip.key} style={{ width: `${clip.width}%` }}>{clip.index} &nbsp; {clip.label}</div>)}</div>
-        <div className="playhead" style={{ left: `${progress * 100}%` }} />
-        <input
-          className="scrubber"
-          aria-label="Scrub animation timeline"
-          type="range"
-          min="0"
-          max="1"
-          step="0.001"
-          value={progress}
-          disabled={!hasTimeline || !transportEnabled}
-          onChange={event => onSeek(Number(event.target.value))}
-        />
-      </div>
+    <div className="track-time-ruler" aria-hidden="true"><span>TRACK / SCENE</span><div><i>00:00</i><i>{formatTime(Math.round(duration / 2))}</i><i>{formatTime(Math.ceil(duration))}</i></div><span>SEC</span></div>
+    <div className="track-lanes">
+      {tracks.map((track, index) => {
+        const left = totalTrackDuration ? trackOffset / totalTrackDuration * 100 : 0;
+        const width = totalTrackDuration ? track.duration / totalTrackDuration * 100 : 0;
+        trackOffset += track.duration;
+
+        return <div className={`scene-track ${track.enabled ? '' : 'is-muted'}`} key={track.key}>
+          <div className="scene-track-controls">
+            <span className="track-scene-index">{String(index + 1).padStart(2, '0')}</span>
+            <button className="track-enable" type="button" aria-pressed={track.enabled} aria-label={`${track.enabled ? 'Mute' : 'Enable'} ${track.label} track`} onClick={() => onTrackToggle(track.key)}>{track.enabled ? '●' : '○'}</button>
+            <strong>{track.label}</strong>
+            <span className="track-reorder">
+              <button type="button" aria-label={`Move ${track.label} track up`} disabled={index === 0} onClick={() => onTrackMove(track.key, -1)}>↑</button>
+              <button type="button" aria-label={`Move ${track.label} track down`} disabled={index === tracks.length - 1} onClick={() => onTrackMove(track.key, 1)}>↓</button>
+            </span>
+          </div>
+          <div className="scene-track-lane" aria-label={`${track.label} starts at ${left.toFixed(0)}% and lasts ${track.duration.toFixed(1)} seconds`}>
+            <div className={`timeline-clip clip-${index + 1}`} style={{ left: `${left}%`, width: `${width}%` }}>
+              {track.label}<small>{track.duration.toFixed(1)}s</small>
+            </div>
+            <div className="playhead" style={{ left: `${progress * 100}%` }} />
+          </div>
+          <label className="track-duration-control">
+            <span>{track.duration.toFixed(1)}s</span>
+            <input
+              type="range"
+              min="0.6"
+              max="6"
+              step="0.1"
+              aria-label={`${track.label} scene duration`}
+              value={track.duration}
+              onChange={event => onTrackDuration(track.key, Number(event.target.value))}
+            />
+          </label>
+        </div>;
+      })}
     </div>
-    <div className="timeline-bottom"><span>ACTIVE PACK <i>{packName.toUpperCase()}</i> <i>TYPE</i> <i>WIPE</i> <i>FLASH</i></span><span>{transportEnabled ? 'GSAP · REUSABLE SCENE ENGINE' : 'EDIT PREVIEW · SELECT MOTION EDIT TO PLAY'}</span></div>
+    <div className={`timeline-scrub-row ${hasTimeline ? 'has-timeline' : ''}`}>
+      <span>PLAYHEAD</span>
+      <input
+        className="scrubber"
+        aria-label="Scrub animation timeline"
+        type="range"
+        min="0"
+        max="1"
+        step="0.001"
+        value={progress}
+        disabled={!hasTimeline || !transportEnabled}
+        onChange={event => onSeek(Number(event.target.value))}
+      />
+      <span>{Math.round(progress * 100)}%</span>
+    </div>
+    <details className="keyframe-controls">
+      <summary>KEYFRAME CONTROLS <span>edit animation values</span></summary>
+      <div className="keyframe-grid">
+        <label>TYPE REVEAL <output>{motionSettings.typeDuration.toFixed(2)}s</output>
+          <input type="range" min="0.2" max="1.4" step="0.05" value={motionSettings.typeDuration} onChange={event => onMotionSetting('typeDuration', Number(event.target.value))} />
+        </label>
+        <label>IMPACT FLASH <output>{motionSettings.flashOpacity.toFixed(2)}</output>
+          <input type="range" min="0" max="0.5" step="0.01" value={motionSettings.flashOpacity} onChange={event => onMotionSetting('flashOpacity', Number(event.target.value))} />
+        </label>
+        <label>CAMERA PUSH <output>{motionSettings.cameraScale.toFixed(3)}×</output>
+          <input type="range" min="1" max="1.12" step="0.005" value={motionSettings.cameraScale} onChange={event => onMotionSetting('cameraScale', Number(event.target.value))} />
+        </label>
+      </div>
+    </details>
+    <div className="timeline-bottom"><span>ACTIVE PACK <i>{packName.toUpperCase()}</i> <i>{tracks.filter(track => track.enabled).length} ACTIVE TRACKS</i></span><span>SCENE ORDER + CLIP LENGTHS DRIVE GSAP PLAYBACK</span></div>
   </section>;
 }

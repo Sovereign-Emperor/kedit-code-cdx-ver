@@ -1,39 +1,47 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { getEditDuration } from '../editTimeline.js';
 import { getTransitionStyle, TRANSITION_STYLES } from '../motionPresets.js';
 
-// One timeline hook owns animation state and GSAP cleanup for any composition using this scene contract.
 function resetMetric(root, content) {
   const value = root?.querySelector('.metric-value');
   const metric = content.scenes.data.metric;
   if (value) value.textContent = `${metric.prefix}${metric.from.toLocaleString()}`;
 }
 
-export function useMotionTimeline(content, transitionStyle, transitionOptions = TRANSITION_STYLES) {
+// One timeline hook owns GSAP playback and turns editable scene tracks into a
+// sequential composition. Every track duration scales its matching choreography.
+export function useMotionTimeline(
+  content,
+  transitionStyle,
+  transitionOptions = TRANSITION_STYLES,
+  tracks,
+  motionSettings = content.motion
+) {
   const root = useRef(null);
   const timeline = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(content.project.duration);
   const [status, setStatus] = useState('READY');
+  const duration = getEditDuration(tracks);
   const transition = getTransitionStyle(transitionStyle, transitionOptions);
   const enterState = () => ({ ...transition.enter });
   const settleState = () => ({ ...transition.settle });
   const exitState = () => {
     const { durationScale = 1, ...state } = transition.exit;
-    return { ...state, duration: state.duration ?? content.motion.transition * durationScale };
+    return { ...state, duration: state.duration ?? motionSettings.transition * durationScale };
   };
 
-  const reset = () => {
+  const reset = (trackList = tracks) => {
     timeline.current?.kill();
     timeline.current = null;
     if (root.current) {
       gsap.set(root.current.querySelectorAll('[data-anim], .intro-words .kinetic-letter, .intro-kicker, .intro-subtitle, .editor, .code-line, .impact-words .kinetic-letter, .metric-value, .data-kicker, .data-caption, .outro-words .kinetic-letter, .outro-subtitle, .motion-rule, .orbit'), { clearProps: 'all' });
-      // Graph bar heights are content data in inline styles. Clear only the
-      // animated transform so reset doesn't erase the values that draw bars.
+      // Graph bar heights are content data; clear only the animated transform.
       gsap.set(root.current.querySelectorAll('.graph-bar'), { clearProps: 'transform' });
       gsap.set(root.current.querySelectorAll('.motion-scene'), { autoAlpha: 0, x: 0, y: 0, scale: 1, rotation: 0, skewX: 0, filter: 'blur(0px)', clipPath: 'inset(0 0 0 0)' });
-      gsap.set(root.current.querySelector('.scene-intro'), { autoAlpha: 1 });
+      const firstTrack = trackList.find(track => track.enabled);
+      if (firstTrack) gsap.set(root.current.querySelector(`.scene-${firstTrack.key}`), { autoAlpha: 1 });
       gsap.set(root.current.querySelector('.flash'), { opacity: 0 });
       gsap.set(root.current.querySelector('.camera-layer'), { clearProps: 'all' });
       resetMetric(root.current, content);
@@ -47,11 +55,13 @@ export function useMotionTimeline(content, transitionStyle, transitionOptions = 
     timeline.current?.kill();
     if (!root.current) return;
 
+    const activeTracks = tracks.filter(track => track.enabled);
+    if (!activeTracks.length) throw new Error('The edit needs at least one enabled scene track.');
     setPlaying(true);
     setProgress(0);
     setStatus('BOOTING');
     resetMetric(root.current, content);
-    const q = (selector) => root.current.querySelectorAll(selector);
+    const q = selector => root.current.querySelectorAll(selector);
     const camera = root.current.querySelector('.camera-layer');
 
     gsap.set(q('[data-anim]'), { clearProps: 'all' });
@@ -82,62 +92,90 @@ export function useMotionTimeline(content, transitionStyle, transitionOptions = 
     });
     timeline.current = tl;
 
-    tl.addLabel('intro')
-      .set(q('.scene-intro'), { autoAlpha: 1 })
-      .call(() => setStatus('INTRO'))
-      .to(q('.intro-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, duration: content.motion.typeDuration, stagger: { each: content.motion.typeStagger, from: 'start' }, ease: 'back.out(1.4)' })
-      .to(q('.intro-kicker, .intro-subtitle'), { opacity: 1, y: 0, duration: 0.42, stagger: 0.12 }, '-=0.35')
-      .to(q('.intro-rule'), { scaleX: 1, duration: 0.55, ease: 'power3.out' }, '-=0.3')
-      .to(q('.scene-intro'), exitState(), '+=0.35')
-      .addLabel('code')
-      .set(q('.scene-code'), enterState())
-      .call(() => setStatus('CODE'))
-      .to(q('.scene-code'), settleState())
-      .to(q('.editor'), { clipPath: 'inset(0 0 0 0)', duration: content.motion.transition, ease: 'power3.inOut' })
-      .to(q('.code-line'), { opacity: 1, x: 0, duration: 0.32, stagger: 0.12 }, '-=0.15')
-      .to(q('.scan'), { xPercent: 140, duration: 0.8, ease: 'power2.inOut' }, '-=0.12')
-      .to(q('.scene-code'), exitState(), '+=0.38')
-      .addLabel('impact')
-      .set(q('.scene-impact'), enterState())
-      .call(() => setStatus('IMPACT'))
-      .to(q('.scene-impact'), settleState())
-      .to(q('.flash'), { opacity: content.motion.flashOpacity, duration: 0.055, yoyo: true, repeat: 1, ease: 'none' }, '<')
-      .to(q('.impact-words .kinetic-letter'), { yPercent: 0, rotation: 0, opacity: 1, scale: 1, duration: content.motion.typeDuration, stagger: { each: content.motion.typeStagger, from: 'start' }, ease: 'back.out(1.7)' }, '-=0.16')
-      .to(q('.orbit'), { scale: 1, duration: 0.7, ease: 'power2.out' }, '-=0.48')
-      .to(q('.scene-impact'), exitState(), '+=0.42')
-      .addLabel('data')
-      .set(q('.scene-data'), enterState())
-      .call(() => setStatus('DATA'))
-      .to(q('.scene-data'), settleState())
-      .to(q('.data-kicker, .data-caption'), { opacity: 1, y: 0, duration: 0.38, stagger: 0.12 }, '-=0.24')
-      .to(q('.metric-value'), { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.48, ease: 'back.out(1.5)' }, '-=0.2')
-      .to(counter, {
-        value: content.scenes.data.metric.to,
-        duration: content.motion.metricDuration,
-        ease: 'power2.out',
-        onUpdate: () => {
-          const value = root.current?.querySelector('.metric-value');
-          const metric = content.scenes.data.metric;
-          if (value) value.textContent = `${metric.prefix}${Math.round(counter.value).toLocaleString()}`;
+    const makeScene = (key, isLast) => {
+      const scene = q(`.scene-${key}`);
+      const segment = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      const animateType = (selector, options = {}) => segment.to(q(selector), {
+        yPercent: 0,
+        rotation: 0,
+        opacity: 1,
+        duration: motionSettings.typeDuration,
+        stagger: { each: motionSettings.typeStagger, from: 'start' },
+        ...options
+      });
+
+      if (key === 'intro') {
+        segment.set(scene, { autoAlpha: 1 })
+          .call(() => setStatus('INTRO'));
+        animateType('.intro-words .kinetic-letter', { ease: 'back.out(1.4)' });
+        segment.to(q('.intro-kicker, .intro-subtitle'), { opacity: 1, y: 0, duration: 0.42, stagger: 0.12 }, '-=0.35')
+          .to(q('.intro-rule'), { scaleX: 1, duration: 0.55 }, '-=0.3');
+      } else if (key === 'code') {
+        segment.set(scene, enterState())
+          .call(() => setStatus('CODE'))
+          .to(scene, settleState())
+          .to(q('.editor'), { clipPath: 'inset(0 0 0 0)', duration: motionSettings.transition, ease: 'power3.inOut' })
+          .to(q('.code-line'), { opacity: 1, x: 0, duration: 0.32, stagger: 0.12 }, '-=0.15')
+          .to(q('.scan'), { xPercent: 140, duration: 0.8, ease: 'power2.inOut' }, '-=0.12');
+      } else if (key === 'impact') {
+        segment.set(scene, enterState())
+          .call(() => setStatus('IMPACT'))
+          .to(scene, settleState())
+          .to(q('.flash'), { opacity: motionSettings.flashOpacity, duration: 0.055, yoyo: true, repeat: 1, ease: 'none' }, '<');
+        animateType('.impact-words .kinetic-letter', { scale: 1, ease: 'back.out(1.7)' });
+        segment.to(q('.orbit'), { scale: 1, duration: 0.7, ease: 'power2.out' }, '-=0.48');
+      } else if (key === 'data') {
+        segment.set(scene, enterState())
+          .call(() => setStatus('DATA'))
+          .to(scene, settleState())
+          .to(q('.data-kicker, .data-caption'), { opacity: 1, y: 0, duration: 0.38, stagger: 0.12 }, '-=0.24')
+          .to(q('.metric-value'), { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.48, ease: 'back.out(1.5)' }, '-=0.2')
+          .to(counter, {
+            value: content.scenes.data.metric.to,
+            duration: motionSettings.metricDuration,
+            ease: 'power2.out',
+            onUpdate: () => {
+              const value = root.current?.querySelector('.metric-value');
+              const metric = content.scenes.data.metric;
+              if (value) value.textContent = `${metric.prefix}${Math.round(counter.value).toLocaleString()}`;
+            }
+          }, '-=0.05')
+          .to(q('.graph-bar'), { scaleY: 1, duration: motionSettings.chartDuration, stagger: motionSettings.typeStagger * 2, ease: 'back.out(1.5)' }, '-=0.85');
+      } else if (key === 'outro') {
+        segment.set(scene, enterState())
+          .call(() => setStatus('OUTRO'))
+          .to(scene, settleState());
+        animateType('.outro-words .kinetic-letter');
+        segment.to(q('.outro-subtitle'), { opacity: 1, x: 0, duration: 0.4 }, '-=0.25')
+          .to(q('.outro-rule'), { scaleX: 1, duration: 0.45 }, '-=0.28');
+      } else {
+        throw new Error(`Unknown scene track: ${key}`);
+      }
+
+      if (!isLast) segment.to(scene, exitState(), '+=0.3');
+      return segment;
+    };
+
+    const lastActiveIndex = tracks.reduce((lastIndex, track, index) => track.enabled ? index : lastIndex, -1);
+    tracks.forEach((track, index) => {
+      if (!track.enabled) {
+        tl.addLabel(track.key);
+        tl.to({}, { duration: track.duration });
+        return;
+      }
+
+      const segment = makeScene(track.key, index === lastActiveIndex);
+      if (index === lastActiveIndex) {
+        if (root.current.classList.contains('fx-camera')) {
+          segment.to(camera, { scale: motionSettings.cameraScale, duration: motionSettings.cameraDuration, yoyo: true, repeat: 1, ease: 'power2.inOut' }, '<');
         }
-      }, '-=0.05')
-      .to(q('.graph-bar'), { scaleY: 1, duration: content.motion.chartDuration, stagger: content.motion.typeStagger * 2, ease: 'back.out(1.5)' }, '-=0.85')
-      .to(q('.scene-data'), exitState(), '+=0.32')
-      .addLabel('outro')
-      .set(q('.scene-outro'), enterState())
-      .call(() => setStatus('OUTRO'))
-      .to(q('.scene-outro'), settleState())
-      .to(q('.outro-words .kinetic-letter'), { yPercent: 0, opacity: 1, duration: content.motion.typeDuration, stagger: { each: content.motion.typeStagger, from: 'start' }, ease: 'power3.out' }, '-=0.18')
-      .to(q('.outro-subtitle'), { opacity: 1, x: 0, duration: 0.4 }, '-=0.25')
-      .to(q('.outro-rule'), { scaleX: 1, duration: 0.45 }, '-=0.28');
-
-    if (root.current.classList.contains('fx-camera')) {
-      tl.to(camera, { scale: content.motion.cameraScale, duration: content.motion.cameraDuration, yoyo: true, repeat: 1, ease: 'power2.inOut' }, '-=0.35');
-    }
-
-    tl.to(q('.pulse-dot'), { scale: 1.5, opacity: 0.3, duration: 0.25, yoyo: true, repeat: 3 }, '<');
-    tl.to({}, { duration: Math.max(0, content.project.duration - tl.duration()) });
-    setDuration(tl.duration());
+        segment.to(q('.pulse-dot'), { scale: 1.5, opacity: 0.3, duration: 0.25, yoyo: true, repeat: 3 }, '<');
+      }
+      const nativeDuration = segment.duration();
+      if (nativeDuration > 0) segment.timeScale(nativeDuration / track.duration);
+      tl.addLabel(track.key);
+      tl.add(segment);
+    });
   };
 
   const togglePlayback = () => {
@@ -156,7 +194,7 @@ export function useMotionTimeline(content, transitionStyle, transitionOptions = 
     }
   };
 
-  const seek = (value) => {
+  const seek = value => {
     if (!timeline.current) return;
     timeline.current.pause();
     timeline.current.progress(value);
